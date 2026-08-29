@@ -1,0 +1,23 @@
+# Normalizacao de fim de linha: autoria no Windows, compilacao no macOS.
+# Forca LF em todo texto para o build/Xcode nao tropecar em CRLF (gotcha conhecido).
+* text=auto eol=lf
+
+*.swift   text eol=lf
+*.yml     text eol=lf
+*.yaml    text eol=lf
+*.plist   text eol=lf
+*.xcprivacy text eol=lf
+*.entitlements text eol=lf
+*.json    text eol=lf
+*.xcstrings text eol=lf
+*.md      text eol=lf
+*.sh      text eol=lf
+
+# Binarios: nunca normalizar
+*.png     binary
+*.jpg     binary
+*.jpeg    binary
+*.m4a     binary
+*.aac     binary
+*.pdf     binary
+*.car     binary

@@ -1,0 +1,27 @@
+{
+  "sourceLanguage" : "pt-BR",
+  "strings" : {
+    "ajustes" : {
+      "comment" : "Titulo da aba de ajustes",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "settings" } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "ajustes" } }
+      }
+    },
+    "biblioteca" : {
+      "comment" : "Titulo da aba de biblioteca",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "library" } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "biblioteca" } }
+      }
+    },
+    "player" : {
+      "comment" : "Titulo da aba do player",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "player" } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "player" } }
+      }
+    }
+  },
+  "version" : "1.0"
+}

@@ -1,0 +1,32 @@
+# Projeto Xcode gerado pelo XcodeGen (nunca versionar; recriar com `xcodegen generate`)
+*.xcodeproj/
+*.xcworkspace/
+
+# Info.plist gerado a partir do bloco `info` do project.yml
+Sources/Resources/Info.plist
+
+# Build / DerivedData
+DerivedData/
+build/
+.build/
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Xcode user state
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+
+# SwiftPM
+.swiftpm/
+
+# macOS
+.DS_Store
+
+# Segredos / chaves (NUNCA versionar)
+*.p8
+*.p12
+*.mobileprovision
+*.cer
+AuthKey_*.p8
