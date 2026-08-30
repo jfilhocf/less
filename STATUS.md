@@ -34,9 +34,14 @@
 - Icone/launch/screenshots finais: placeholder gerado; definitivos na Fase 5.
 
 ## Proximo passo
+- **DECISAO ABERTA (aguarda Joao):** (a) colar o PAT -> eu subo e o CI valida a Fase 0 verde
+  ANTES de escrever o motor de audio (recomendado), ou (b) eu sigo autorando a Fase 1 as cegas
+  e a verificacao alcanca quando o token/Mac aparecer.
 - Fase 1 (motor de audio): binaural + ruido procedural (sem depender de recurso externo),
   ambiente com slot pronto/stub. Autoravel ja no Windows; verificavel no CI.
 
 ## Historico
 - 2026-08-29 - Projeto criado. PRD lido e reestruturado em 2 tracks (autoria Windows / build Mac)
-  com Definition of Ready por fase. Fase 0 autorada (shell + build config + CI + docs). Repo local.
+  com Definition of Ready por fase. Fase 0 autorada (shell + build config + CI + docs). Repo local (e9fbfd5).
+- 2026-08-30 - Sessao encerrada. Fase 0 commitada e validada estruturalmente (YAML/JSON/plist);
+  compilacao Swift ainda NAO verificada. Decisao a/b acima em aberto; bloqueio do CI = PAT ausente.
