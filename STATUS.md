@@ -54,11 +54,11 @@
   (teto/rolagem), `PomodoroPreset`/`PomodoroPhase`.
 - **Modelos SwiftData:** `FocusTask`, `FocusSession` (mixID->taskID), `AppSettings`. (`PomodoroConfig` substituido por preset.)
 - **Servico:** `LiveTimerService` (`@MainActor @Observable`) sobre o motor puro.
-- **Testes Swift Testing:** `PomodoroEngineTests` + `DailyTaskRulesTests`. PENDENTE confirmar verde no CI.
+- **Testes Swift Testing:** `PomodoroEngineTests` + `DailyTaskRulesTests`. **CI VERDE** (15 testes OK, run 34865687552).
 
 ## Proximo passo
-- **Confirmar CI verde** deste incremento (push pendente - bloqueado por vazamento de token
-  no comando; sincronizar com metodo seguro ou quando o Mac clonar).
+- ~~Confirmar CI verde deste incremento~~ **CI VERDE 2026-09-14** (run 34865687552: compilou
+  limpo + 15 testes passaram). Nucleo de produtividade validado.
 - Depois: `PersistenceService`/servico de tarefas sobre SwiftData (criar/rolar/concluir usando
   `DailyTaskRules`), `NotificationService` (agendar transicoes via `upcomingTransitions`), e a
   UI da Fase 4 (lista de 3 tarefas + tela de foco). Audio retoma apos o nucleo de produtividade.
