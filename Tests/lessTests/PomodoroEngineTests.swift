@@ -50,11 +50,11 @@ struct PomodoroEngineTests {
 
     @Test("multiplas transicoes perdidas em background reconciliam certo")
     func reconcilesManyMissedTransitions() {
-        // um super-ciclo = 7800s; 7800 + 1600 cai no 2o bloco de foco do 2o ciclo:
-        // 1600 = 1500 (foco1) + 100 -> foco (indice 2 do novo periodo => indice global 10)
+        // um super-ciclo = 7800s; 7800 + 1600 cai na pausa CURTA do 2o ciclo:
+        // no periodo novo -> foco1 (0..1500), pausa curta (1500..1800); 1600 = 100s na pausa.
         let s = engine.status(elapsed: 7800 + 1600)
-        #expect(s.phase == .focus)
-        #expect(s.remaining == 1400)      // 1500 - 100
+        #expect(s.phase == .shortBreak)
+        #expect(s.remaining == 200)          // 1800 - 1600
         #expect(s.completedFocusBlocks == 5) // 4 do 1o ciclo + 1 do 2o
     }
 
