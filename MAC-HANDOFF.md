@@ -5,14 +5,18 @@ escrito para o codigo ter sido 100% autorado no Windows e so precisar do Mac par
 o Mac faz de fato: compilar de verdade, rodar em iPhone, assinar e submeter.
 
 ## 0. Instalar o basico (uma vez)
+- **Xcode 16+**: JA INSTALADO (14/09). So aceitar a licenca uma vez.
+- **Homebrew**: JA INSTALADO.
+- **XcodeGen**: FALTA instalar.
+- **Claude Code**: instalador nativo (nao depende de Node/npm).
 ```bash
-# Xcode: instalar pela App Store (Xcode 16+ para Swift 6). Depois:
-xcode-select --install
 sudo xcodebuild -license accept
-# Homebrew (se nao tiver) e o gerador de projeto:
-brew install xcodegen
-# Claude Code:
-npm install -g @anthropic-ai/claude-code    # ou o instalador oficial do momento
+xcode-select --install                          # se ainda nao rodou (command line tools)
+brew install xcodegen                           # gerador do .xcodeproj (ainda faltando)
+# Claude Code (nativo, sem Node):
+curl -fsSL https://claude.ai/install.sh | bash  # reabrir o terminal depois; `claude` pra logar
+# Alternativa, so se ja tiver Node/npm:
+# npm install -g @anthropic-ai/claude-code
 ```
 
 ## 1. Pegar o codigo
