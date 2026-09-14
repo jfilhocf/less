@@ -568,3 +568,35 @@ Itens que o agente **não deve decidir sozinho**. Pergunte antes de implementar:
 - Garcia-Argibay, M., Santed, M. A., Reales, J. M. (2019). *Efficacy of binaural auditory beats in cognition, anxiety, and pain perception: a meta-analysis*. Psychological Research, 83(2), 357-372. doi:10.1007/s00426-018-1066-8. Efeito geral g = 0,45 sobre memória, atenção, ansiedade e dor.
 - Basu, S., Banerjee, B. (2023). *Potential of binaural beats intervention for improving memory and attention: insights from meta-analysis and systematic review*. Psychological Research, 87, 951-963. doi:10.1007/s00426-022-01706-7. Resultados mistos nos domínios de atenção e memória.
 - Oster, G. (1973). *Auditory beats in the brain*. Scientific American, 229(4), 94-102. Base do limite de percepção por frequência portadora.
+
+---
+
+## 16. Adendo (2026-09-14): Tarefas do dia + Pomodoro por preset
+
+Mudança de escopo **autorizada pelo João** (dono do produto). Prioriza o núcleo de
+produtividade antes da trilha de áudio (que passa a vir depois). Adiciona uma lista de
+tarefas ao less e simplifica o Pomodoro para dois presets fixos.
+
+### 16.1 Lista de tarefas do dia
+- **Teto de 3 tarefas por dia.** Restrição deliberada, alinhada ao princípio "less" (não é
+  limitação técnica). Concluir uma tarefa **não** devolve a vaga - as 3 são o compromisso do dia.
+- **Rolagem que ocupa vaga.** Tarefa não concluída rola para o dia seguinte e ocupa uma das
+  3 vagas (ex.: 1 rolada + 2 novas). A rolagem nunca descarta tarefa; se houver mais de 3
+  pendentes acumuladas, todas rolam e bloqueiam a criação até o usuário zerar o atraso.
+- Regras puras em `DailyTaskRules`; persistência em `FocusTask` (`@Model`, nome evita colisão
+  com `Swift.Task`). Chave de dia = `"yyyy-MM-dd"` local (ordenável).
+
+### 16.2 Pomodoro por preset (substitui o 6.2 configurável)
+- **Dois presets fixos**, escolhidos ao iniciar a tarefa - sem tela de configuração de duração:
+  - **`25/5`**: foco 25 min, pausa curta 5 min, pausa longa 15 min.
+  - **`50/10`**: foco 50 min, pausa curta 10 min, pausa longa 20 min.
+- **Pomodoro clássico com pausa longa**: foco → pausa curta em loop; após 4 blocos de foco,
+  pausa longa; e repete. `cyclesUntilLongBreak = 4` (mantém o padrão do 6.2).
+- Máquina de estados e correção em background do 6.1/6.3 **continuam valendo**. O `PomodoroConfig`
+  configurável do modelo 7 é substituído pelo enum `PomodoroPreset`.
+
+### 16.3 O que muda no roadmap
+- Ordem de execução invertida: **núcleo de produtividade (tarefas + Pomodoro) antes do áudio.**
+  A trilha de áudio (antiga Fase 1) fica adiada; o DSP procedural puro já está commitado e isolado.
+- Modelos afetados (seção 7): entra `FocusTask`; `FocusSession.mixID` vira `taskID`; sai
+  `PomodoroConfig` (vira `PomodoroPreset`). Demais guardrails (seção 12) intactos.

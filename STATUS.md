@@ -38,11 +38,30 @@
 - **[decisao adiada]** fonte dos arquivos de ambiente (.m4a) - por ora, so procedural.
 - Icone/launch/screenshots finais: placeholder gerado; definitivos na Fase 5.
 
+## Repriorizacao (2026-09-14) - nucleo de produtividade antes do audio
+- **Mudanca de escopo autorizada pelo Joao** (ver PRD secao 16): entra uma **lista de tarefas
+  do dia** (teto de 3/dia; incompleta rola e ocupa vaga; concluir nao devolve vaga) e o
+  Pomodoro vira **dois presets fixos** (`25/5` e `50/10`), classico com pausa longa apos 4 blocos.
+- **Ordem invertida:** produtividade (tarefas + Pomodoro) ANTES da trilha de audio. O audio
+  (antiga Fase 1) fica adiado; DSP procedural puro ja commitado e isolado (`Sources/Services/Audio/DSP.swift`).
+- **Track B (Mac):** Joao instalando ativos no Mac (Xcode 16+ JA instalado 14/09); rodando o
+  Claude Code no terminal do Mac. Autoria segue no Windows -> push -> CI compila; Mac clona e
+  continua/roda em device. Um autor por vez pra nao divergir.
+
+## Feito nesta sessao (2026-09-14) - nucleo logico + testes (CI-verificavel)
+- **Logica pura (testavel sem device):** `PomodoroEngine` (maquina de estados ancorada em
+  timestamp + reconciliacao de N transicoes perdidas em background, PRD 6.3), `DailyTaskRules`
+  (teto/rolagem), `PomodoroPreset`/`PomodoroPhase`.
+- **Modelos SwiftData:** `FocusTask`, `FocusSession` (mixID->taskID), `AppSettings`. (`PomodoroConfig` substituido por preset.)
+- **Servico:** `LiveTimerService` (`@MainActor @Observable`) sobre o motor puro.
+- **Testes Swift Testing:** `PomodoroEngineTests` + `DailyTaskRulesTests`. PENDENTE confirmar verde no CI.
+
 ## Proximo passo
-- Decisao a/b RESOLVIDA pela via (a): CI verde primeiro. Base solida pra construir em cima.
-- **Fase 1 (motor de audio):** binaural + ruido procedural (sem depender de recurso externo),
-  ambiente com slot pronto/stub. Autoravel ja no Windows; agora com CI compilando a cada push
-  = feedback loop real. Cada push na main compila+testa no simulador.
+- **Confirmar CI verde** deste incremento (push pendente - bloqueado por vazamento de token
+  no comando; sincronizar com metodo seguro ou quando o Mac clonar).
+- Depois: `PersistenceService`/servico de tarefas sobre SwiftData (criar/rolar/concluir usando
+  `DailyTaskRules`), `NotificationService` (agendar transicoes via `upcomingTransitions`), e a
+  UI da Fase 4 (lista de 3 tarefas + tela de foco). Audio retoma apos o nucleo de produtividade.
 
 ## Historico
 - 2026-08-29 - Projeto criado. PRD lido e reestruturado em 2 tracks (autoria Windows / build Mac)
@@ -54,3 +73,7 @@
   Fase 0 verificada de verdade. Proximo: Fase 1 (motor de audio).
 - 2026-09-08 (fim do dia) - Joao comecou a provisionar o Mac (Track B, antecipado): Homebrew
   instalado; travou em achar o Xcode na App Store (hipotese: macOS < 14.5). Retoma amanha 09/09.
+- 2026-09-14 - Xcode 16+ instalado no Mac; Joao instalando o resto e o Claude Code no terminal do Mac.
+  Repriorizacao autorizada: nucleo de produtividade (tarefas do dia + Pomodoro por preset) antes do
+  audio (PRD secao 16). Autorada a logica pura (PomodoroEngine, DailyTaskRules), modelos SwiftData e
+  testes. Falta push/CI verde. DSP de audio commitado (parcial) e adiado.
