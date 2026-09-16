@@ -1,44 +1,50 @@
 # MAC-HANDOFF - continuar o "less" no Mac
 
-Runbook para quando o Joao pegar o Mac e instalar o **Claude Code no terminal**. Foi
-escrito para o codigo ter sido 100% autorado no Windows e so precisar do Mac para o que
-o Mac faz de fato: compilar de verdade, rodar em iPhone, assinar e submeter.
+Runbook da migracao do desenvolvimento para o Mac. **Os passos 0-3 estao CONCLUIDOS
+(2026-09-16)**: o Mac deixou de ser so a maquina de assinar e passou a ser onde o projeto e
+autorado, compilado e testado. O que resta aqui e o que so o Mac faz: assinar, rodar em
+iPhone fisico e submeter.
 
-## 0. Instalar o basico (uma vez)
-- **Xcode 16+**: JA INSTALADO (14/09). So aceitar a licenca uma vez.
-- **Homebrew**: JA INSTALADO.
-- **XcodeGen**: FALTA instalar.
-- **Claude Code**: instalador nativo (nao depende de Node/npm).
+## 0. Instalar o basico - CONCLUIDO
+Estado verificado na maquina em 2026-09-16:
+
+| Item | Estado |
+|---|---|
+| Xcode **26.6** (Swift 6.3.3), licenca aceita | OK |
+| Homebrew | OK |
+| XcodeGen (`/opt/homebrew/bin/xcodegen`) | OK |
+| Claude Code no terminal | OK |
+| GitHub CLI (`gh`) | OK |
+| git (`user.name`/`user.email` configurados) | OK |
+
+## 1. Pegar o codigo - CONCLUIDO
+Clonado em `~/Developer/less` via `gh`/HTTPS:
 ```bash
-sudo xcodebuild -license accept
-xcode-select --install                          # se ainda nao rodou (command line tools)
-brew install xcodegen                           # gerador do .xcodeproj (ainda faltando)
-# Claude Code (nativo, sem Node):
-curl -fsSL https://claude.ai/install.sh | bash  # reabrir o terminal depois; `claude` pra logar
-# Alternativa, so se ja tiver Node/npm:
-# npm install -g @anthropic-ai/claude-code
+git clone https://github.com/jfilhocf/less.git ~/Developer/less
 ```
+> `~/Developer` e a convencao da Apple. Nao usar `~/Documents`: o iCloud Drive sincroniza
+> build artifacts e corrompe DerivedData.
 
-## 1. Pegar o codigo
-- **Se o repo ja estiver no GitHub:** `git clone <url> && cd less`
-- **Se ainda estiver so no Windows:** copiar a pasta `less/` para o Mac (o repo git local
-  ja tem o historico; nao precisa de GitHub para abrir no Xcode).
-
-## 2. Gerar e abrir o projeto
+## 2. Gerar e abrir o projeto - CONCLUIDO
 ```bash
 xcodegen generate          # cria less.xcodeproj a partir do project.yml
 open less.xcodeproj
 ```
 > O `.xcodeproj` e o `Info.plist` sao GERADOS (estao no .gitignore). Sempre rode
-> `xcodegen generate` depois de puxar mudancas no `project.yml`.
+> `xcodegen generate` depois de mexer no `project.yml`.
 
-## 3. Compilar e testar sem conta Apple (simulador)
+## 3. Compilar e testar sem conta Apple (simulador) - CONCLUIDO
+**Verde em 2026-09-16: 15 testes em 3 suites, compilacao limpa no Xcode 26.6.**
 ```bash
+UDID=$(xcrun simctl list devices available -j | python3 -c "import sys,json; d=json.load(sys.stdin); devs=[x for r in d['devices'].values() for x in r if x.get('isAvailable') and 'iPhone' in x['name']]; print(devs[-1]['udid'])")
 xcodebuild test -project less.xcodeproj -scheme less \
-  -destination 'platform=iOS Simulator,name=iPhone 16 Pro' \
+  -destination "platform=iOS Simulator,id=$UDID" \
   CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 ```
-Isso e o mesmo que o CI faz. Se o CI ja estava verde, aqui tambem deve estar.
+> **Nao fixe o nome do simulador.** A versao anterior deste runbook usava
+> `name=iPhone 16 Pro`, que nao existe mais no Xcode 26 (os simuladores agora sao iPhone 17
+> / Air, runtime iOS 26.5) - o comando quebrava. Resolver o UDID em tempo de execucao, como
+> o `ci.yml` ja fazia, sobrevive a qualquer atualizacao do Xcode.
 
 ## 4. Provisionar a conta Apple (quando for assinar) - ver PROVISIONING.md
 - Inscrever no **Apple Developer Program** (US$ 99/ano).

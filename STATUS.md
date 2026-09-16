@@ -5,8 +5,10 @@
 > Spec: PRD.md · Execucao: ROADMAP.md · Pre-requisitos: PROVISIONING.md · Mac: MAC-HANDOFF.md.
 
 - **Tipo:** app iOS nativo (Swift 6 / SwiftUI / SwiftData / AVAudioEngine), local-first, offline.
-- **Codigo mora em:** `claude-workspace/less/` (repo git proprio, `git init` local em 2026-08-29).
-- **Onde compila:** Windows autora; **GitHub Actions (macOS) e o compilador**; Mac do Joao para device/submissao.
+- **Codigo mora em:** `~/Developer/less` no Mac (`github.com/jfilhocf/less`). Historico comeca
+  em 2026-08-29; migrado do Windows para o Mac em 2026-09-16.
+- **Onde compila:** **Mac** (autoria + compilacao + testes + device); CI (GitHub Actions/macOS)
+  como rede de seguranca a cada push.
 - **Bundle id:** `cloud.convextech.less` · **Idiomas:** pt-BR + en-US · **Marca:** dark-first, acento teal `#5EC7BF`.
 
 ## Estado atual (2026-09-08)
@@ -26,15 +28,31 @@
 - **Correcoes ao PRD aplicadas** (ROADMAP 3): ODR deprecado -> ambientes in-bundle < 200 MB;
   repo publico durante build; String Catalog bilingue desde ja.
 
+## Migracao para o Mac (2026-09-16) - o Mac virou o autor principal
+
+- **Decisao do Joao:** o Mac passa a ser onde o `less` e autorado, compilado, testado e rodado
+  em device. O desktop Windows sai do fluxo (outros projetos + consulta pontual). Acaba o ciclo
+  "escrever no Windows -> push -> esperar o CI dizer se compila": o erro de compilacao agora
+  aparece na hora.
+- **Ambiente (verificado):** Xcode 26.6 / Swift 6.3.3, Homebrew, XcodeGen, `gh`, Claude Code.
+  Codigo em `~/Developer/less`. `git` como `jfilhocf <jfilhocf@gmail.com>` (o historico do
+  Windows usa o nome `Joao (Convex)` com o mesmo e-mail - a atribuicao no GitHub e a mesma).
+- **Build local VERDE:** `xcodegen generate` + `xcodebuild test` = compilacao limpa e **15 testes
+  em 3 suites** passando (`DailyTaskRules`, `PomodoroEngine`, `Sanidade`). O Xcode local e varias
+  versoes mais novo que o `macos-15` do CI e, mesmo com `SWIFT_STRICT_CONCURRENCY: complete`,
+  nao acusou nada - o codigo autorado no Windows estava solido.
+- **Bug de documentacao corrigido:** README/CLAUDE/MAC-HANDOFF fixavam
+  `-destination name=iPhone 16 Pro`, aparelho que **nao existe** no Xcode 26 (runtime iOS 26.5,
+  simuladores iPhone 17/Air) - o comando documentado quebrava no Mac. Agora resolvem o UDID em
+  tempo de execucao, como o `ci.yml` ja fazia. Nao fixar nome de simulador em doc nenhuma.
+
 ## Pendencias
 
 - ~~**[BLOQUEIO CI]** repo+push+CI~~ **RESOLVIDO 2026-09-08** (repo publico no ar, CI verde).
 - **[antes da Fase 6]** tornar o repo PRIVADO antes de adicionar a App Store Connect API key.
 - **[Joao, quando puder]** Apple Developer Program (US$ 99/ano) - iniciar cedo (prazo de dias).
-- **[Mac - EM ANDAMENTO 2026-09-08]** provisionamento do Mac do Joao iniciado: **Homebrew JA
-  INSTALADO**. Falta: **Xcode 16+** (Joao nao achou na App Store - provavel macOS antigo demais;
-  min = macOS Sonoma 14.5+ / Sequoia; ver versao do macOS antes), depois `brew install xcodegen`
-  + Claude Code (`curl -fsSL https://claude.ai/install.sh | bash`). Joao retoma amanha (09/09).
+- ~~**[Mac]** provisionamento do Mac~~ **RESOLVIDO 2026-09-16** - Xcode 26.6, Homebrew,
+  XcodeGen, `gh` e Claude Code instalados; repo clonado; build e 15 testes verdes localmente.
 - **[decisao adiada]** fonte dos arquivos de ambiente (.m4a) - por ora, so procedural.
 - Icone/launch/screenshots finais: placeholder gerado; definitivos na Fase 5.
 
@@ -44,9 +62,8 @@
   Pomodoro vira **dois presets fixos** (`25/5` e `50/10`), classico com pausa longa apos 4 blocos.
 - **Ordem invertida:** produtividade (tarefas + Pomodoro) ANTES da trilha de audio. O audio
   (antiga Fase 1) fica adiado; DSP procedural puro ja commitado e isolado (`Sources/Services/Audio/DSP.swift`).
-- **Track B (Mac):** Joao instalando ativos no Mac (Xcode 16+ JA instalado 14/09); rodando o
-  Claude Code no terminal do Mac. Autoria segue no Windows -> push -> CI compila; Mac clona e
-  continua/roda em device. Um autor por vez pra nao divergir.
+- **Track B (Mac):** CONCLUIDO em 2026-09-16 - o Mac virou o autor principal e a divisao
+  Windows/CI acabou (ver secao abaixo). O Windows fica para outros projetos e consulta pontual.
 
 ## Feito nesta sessao (2026-09-14) - nucleo logico + testes (CI-verificavel)
 - **Logica pura (testavel sem device):** `PomodoroEngine` (maquina de estados ancorada em
@@ -73,7 +90,12 @@
   Fase 0 verificada de verdade. Proximo: Fase 1 (motor de audio).
 - 2026-09-08 (fim do dia) - Joao comecou a provisionar o Mac (Track B, antecipado): Homebrew
   instalado; travou em achar o Xcode na App Store (hipotese: macOS < 14.5). Retoma amanha 09/09.
+- 2026-09-16 - **Migracao para o Mac concluida.** Ambiente provisionado do zero (git, `gh`,
+  clone em `~/Developer/less`), `xcodegen generate` + `xcodebuild test` **VERDES localmente**
+  (15 testes, 3 suites) no Xcode 26.6/Swift 6.3 - bem mais novo que o Xcode do CI e ainda assim
+  compilacao limpa sob strict concurrency. Docs realinhadas (Mac = autor principal) e comando de
+  build corrigido: `iPhone 16 Pro` nao existe no Xcode 26, agora o simulador e resolvido por UDID.
 - 2026-09-14 - Xcode 16+ instalado no Mac; Joao instalando o resto e o Claude Code no terminal do Mac.
   Repriorizacao autorizada: nucleo de produtividade (tarefas do dia + Pomodoro por preset) antes do
   audio (PRD secao 16). Autorada a logica pura (PomodoroEngine, DailyTaskRules), modelos SwiftData e
-  testes. Falta push/CI verde. DSP de audio commitado (parcial) e adiado.
+  testes; pushado e **CI verde** (run 34865687552). DSP de audio commitado (parcial) e adiado.

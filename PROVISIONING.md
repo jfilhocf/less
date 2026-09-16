@@ -16,13 +16,13 @@ pronto quando a fase chegar.
 
 | Item | Primeira fase que precisa | Custo | Prazo | Quem provisiona | Status |
 |---|---|---|---|---|---|
-| Windows + Git + Python + PIL | Fase 0 | ja pago | - | - | **PRONTO** (verificado nesta maquina) |
-| Repo GitHub + Actions | Fase 0 (para CI) | free (publico: macOS ilimitado; privado: ~200 min/mes) | instantaneo | Joao (colar PAT) + agente cria | **PENDENTE** - PAT ausente no cofre |
-| GitHub PAT (escopo `repo`) | Fase 0 | free | instantaneo | Joao cola em `convex-ads/SEGREDOS.local.md` | **PENDENTE** |
+| Mac + Xcode 26.6 + Git + Homebrew | Fase 0 (autoria/build) | ja pago | - | - | **PRONTO** (verificado 2026-09-16) |
+| Repo GitHub + Actions | Fase 0 (para CI) | free (publico: macOS ilimitado; privado: ~200 min/mes) | instantaneo | Joao + agente | **PRONTO** - `jfilhocf/less` publico, CI verde |
+| Credencial GitHub no Mac | Fase 0 | free | minutos | `gh auth login` (HTTPS via navegador) | **PRONTO** (2026-09-16) - dispensa PAT manual |
 | Homebrew (no Mac) | Fase 6 (base p/ xcodegen) | free | minutos | Joao instala | **PRONTO** (instalado 2026-09-08) |
-| XcodeGen (no Mac/CI) | Fase 0/1 (primeiro build) | free (OSS) | instantaneo | `brew install xcodegen` | pronto no CI; no Mac = apos Xcode |
-| Xcode 16+ + macOS 14.5+ | Fase 6 (e device) | ja tem Mac | - | Joao instala | **EM ANDAMENTO** - Joao nao achou na App Store 09/08 (hipotese: macOS < 14.5, checar versao) |
-| Claude Code no terminal do Mac | Fase 6 | free | minutos | Joao instala (`curl -fsSL https://claude.ai/install.sh \| bash`) | **A FAZER** apos Xcode |
+| XcodeGen (no Mac/CI) | Fase 0/1 (primeiro build) | free (OSS) | instantaneo | `brew install xcodegen` | **PRONTO** no CI e no Mac |
+| Xcode 16+ + macOS 14.5+ | Fase 0 (autoria/build) e 6 (device) | ja tem Mac | - | Joao instala | **PRONTO** - Xcode 26.6 / Swift 6.3.3, licenca aceita |
+| Claude Code no terminal do Mac | Fase 0 (autoria) | free | minutos | Joao instala | **PRONTO** (2026-09-16) |
 | Arquivos de audio de ambiente (.m4a) | Trilha de ambiente | varia (CC0 free / licenca paga / gravar) | dias | Joao decide + fornece | **ADIADO** (decisao: procedural primeiro) |
 | Icone final 1024 + launch screen | Fase 5 | design proprio/terceiro | dias | Joao/agente | placeholder gerado; final depois |
 | Hospedagem da politica de privacidade | Fase 5 | free (Cloudflare Pages, conta jfilhocf) | instantaneo | agente publica | **PRONTO** (infra ja existe) |

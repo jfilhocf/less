@@ -9,10 +9,12 @@ Spec: [`PRD.md`](PRD.md). Execucao: [`ROADMAP.md`](ROADMAP.md). Pre-requisitos:
 Continuar no Mac: [`MAC-HANDOFF.md`](MAC-HANDOFF.md).
 
 ## Onde este projeto compila
-- **Windows (esta maquina):** autoria de TODO o codigo/texto. NAO compila iOS aqui.
-- **CI (GitHub Actions, runner macOS):** o compilador. Push -> `xcodegen` -> build simulador
-  -> testes Swift Testing, sem conta Apple. Ver `.github/workflows/ci.yml`.
-- **Mac do Joao (depois):** device, assinatura, submissao. Ver `MAC-HANDOFF.md`.
+- **Mac do Joao (esta maquina):** autoria, compilacao, testes e device - tudo no mesmo lugar,
+  com feedback de compilacao imediato. Ambiente: Xcode 26.6 / Swift 6.3, Homebrew, XcodeGen.
+- **CI (GitHub Actions, runner macOS):** rede de seguranca, nao mais "o compilador". Cada push
+  em `main` regenera o projeto do zero e roda os testes. Ver `.github/workflows/ci.yml`.
+- **Windows:** fora do fluxo desde 2026-09-16 (era a maquina de autoria enquanto nao havia Mac
+  provisionado). Se voltar a autorar la, **um autor por vez**, sempre via push/pull.
 
 ## Stack (fechada - ADRs no PRD 3)
 - Swift 6 (strict concurrency) · SwiftUI + Observation (`@Observable`) · SwiftData ·
@@ -23,12 +25,17 @@ Continuar no Mac: [`MAC-HANDOFF.md`](MAC-HANDOFF.md).
 
 ## Comandos
 ```bash
-xcodegen generate     # (no Mac/CI) gera less.xcodeproj a partir do project.yml
+xcodegen generate     # gera less.xcodeproj a partir do project.yml (o .xcodeproj e descartavel)
+
+# compila + testa no simulador, sem assinar. O simulador e resolvido em tempo de execucao
+# (mesma logica do ci.yml) - nao fixar nome de aparelho, que muda a cada Xcode.
+UDID=$(xcrun simctl list devices available -j | python3 -c "import sys,json; d=json.load(sys.stdin); devs=[x for r in d['devices'].values() for x in r if x.get('isAvailable') and 'iPhone' in x['name']]; print(devs[-1]['udid'])")
 xcodebuild test -project less.xcodeproj -scheme less \
-  -destination 'platform=iOS Simulator,name=iPhone 16 Pro' \
-  CODE_SIGNING_ALLOWED=NO      # compila + testa no simulador, sem assinar
+  -destination "platform=iOS Simulator,id=$UDID" \
+  CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 ```
-No Windows so se edita e commita; a verificacao vem do CI (ou do Mac).
+Rodar isso **antes de commitar**: o erro de compilacao agora aparece aqui, nao 3 minutos
+depois no CI. Sempre `xcodegen generate` de novo apos mexer no `project.yml`.
 
 ## Guardrails (PRD 12 - resumo; sao restricoes rigidas)
 1. Sem backend/API/rede. Offline por definicao.
