@@ -100,14 +100,29 @@
 - **Guardrails intactos:** Screen Time e framework do sistema (2), offline e local (1), sem
   coleta (3).
 
+## Feito nesta sessao (2026-09-18) - FASE 2 FECHADA: persistencia
+
+- **`SwiftDataPersistenceService`** sobre SwiftData: tarefas do dia (criar / concluir / rolar /
+  apagar), `AppSettings` como singleton, `FocusSession` gravada e consultada por intervalo.
+  **Nao decide regra**: teto e rolagem continuam em `DailyTaskRules` (puro); o servico so aplica
+  e grava. `PersistenceError.dayIsFull` distingue "dia cheio" de erro generico.
+- **`ModelContainer.less()` / `.lessInMemory()`**: schema num lugar so, para app e testes nao
+  divergirem. Container ligado no `lessApp.swift` via `.modelContainer(...)`.
+- **11 testes novos** (total: **26 em 4 suites**, todos verdes, zero warning de concorrencia).
+- **Dois bugs achados e corrigidos durante a implementacao:**
+  1. `ModelContainer(for:)` sem URL explicita assume que `Application Support` existe - nao
+     existe em container novo (simulador/primeiro launch). Agora o diretorio e criado e o store
+     tem nome proprio (`less.store`).
+  2. **`ModelContext` NAO retem o `ModelContainer`.** Guardar so o contexto fazia o container
+     morrer com o escopo que o criou e o processo caia com SIGTRAP, sem erro Swift - crash mudo.
+     O servico agora retem o container de proposito (ha comentario no codigo avisando).
+
 ## Proximo passo
-- ~~Confirmar CI verde deste incremento~~ **CI VERDE 2026-09-14** (run 34865687552).
+- ~~**Fase 2** - `PersistenceService`~~ **FEITA 2026-09-18** (26 testes verdes).
 - **Ordem de execucao atual** (ver ROADMAP secao 4.0 - numeracao != ordem):
-  1. **Fase 2** - `PersistenceService` sobre SwiftData (criar/rolar/concluir **reusando**
-     `DailyTaskRules`, sem reimplementar regra).
-  2. **Fase 3** - `NotificationService` (agendar via `upcomingTransitions`, que o engine ja expoe).
-  3. **Fase 4a** - minimo usavel -> **primeiro teste no iPhone do Joao**.
-  4. Depois: 4b (+ App Intents) -> Audio -> Fase 7 (bloqueio) -> Compliance -> Submissao.
+  1. **Fase 3** - `NotificationService` (agendar via `upcomingTransitions`, que o engine ja expoe).
+  2. **Fase 4a** - minimo usavel -> **primeiro teste no iPhone do Joao**.
+  3. Depois: 4b (+ App Intents) -> Audio -> Fase 7 (bloqueio) -> Compliance -> Submissao.
 
 ## Historico
 - 2026-09-18 - **Documentacao sincronizada + novo escopo (PRD 17).** O `ROADMAP.md` estava
