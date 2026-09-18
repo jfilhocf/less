@@ -117,12 +117,34 @@
      morrer com o escopo que o criou e o processo caia com SIGTRAP, sem erro Swift - crash mudo.
      O servico agora retem o container de proposito (ha comentario no codigo avisando).
 
+## Feito nesta sessao (2026-09-18, parte 2) - FASE 3 FECHADA NO CI: notificacoes
+
+- **`LiveNotificationService`**: uma notificacao local por transicao de ciclo, agendada a
+  partir do `upcomingTransitions` que o `PomodoroEngine` **ja expoe** - o servico nao recalcula
+  quando cada fase termina, so traduz transicao em notificacao. Disparo por **data absoluta**
+  (nunca intervalo relativo, que derivaria com o app suspenso - guardrail 12.4).
+- **Cancela antes de reagendar**, entao reconciliar N vezes nao acumula duplicata; e
+  `cancelAll()` filtra por prefixo proprio, sem tocar notificacao de outra origem.
+- **Copy bilingue** (pt-BR/en-US) no String Catalog, sem alegacao de saude nem tom de cobranca:
+  a notificacao so anuncia a fase que comeca. Sem corpo quando nao ha tarefa - nada de
+  engajamento (guardrail 12.9).
+- **12 testes novos** (total: **38 em 5 suites**, verdes, zero warning de concorrencia).
+- **Decisao de concorrencia:** `UNNotificationRequest` **nao e `Sendable`** e o Swift 6 barra
+  passa-lo entre atores - erro de compilacao legitimo. Criado `PendingNotification` (tipo
+  proprio, Sendable); a traducao para o tipo do sistema acontece so na borda, em
+  `SystemNotificationCenter`. Efeito colateral bom: a logica do servico nao depende mais do
+  framework e o teste nao precisa de centro de notificacoes.
+- **Pendente:** o aceite em device da Fase 3 (matar o app com Pomodoro rodando e conferir se a
+  notificacao dispara na hora certa) **depende da Fase 4a** - sem tela nao ha como iniciar um
+  Pomodoro. Entra no checklist da 4a.
+
 ## Proximo passo
 - ~~**Fase 2** - `PersistenceService`~~ **FEITA 2026-09-18** (26 testes verdes).
-- **Ordem de execucao atual** (ver ROADMAP secao 4.0 - numeracao != ordem):
-  1. **Fase 3** - `NotificationService` (agendar via `upcomingTransitions`, que o engine ja expoe).
-  2. **Fase 4a** - minimo usavel -> **primeiro teste no iPhone do Joao**.
-  3. Depois: 4b (+ App Intents) -> Audio -> Fase 7 (bloqueio) -> Compliance -> Submissao.
+- ~~**Fase 3** - `NotificationService`~~ **FEITA 2026-09-18** (38 testes verdes).
+- **Agora: Fase 4a - minimo usavel** -> **primeiro teste no iPhone do Joao**. Lista das 3
+  tarefas do dia + tela de foco + Pomodoro nos dois presets + a notificacao de transicao.
+  Instala com Apple ID gratuita (7 dias), sem precisar dos US$ 99.
+- Depois: 4b (+ App Intents) -> Audio -> Fase 7 (bloqueio) -> Compliance -> Submissao.
 
 ## Historico
 - 2026-09-18 - **Documentacao sincronizada + novo escopo (PRD 17).** O `ROADMAP.md` estava

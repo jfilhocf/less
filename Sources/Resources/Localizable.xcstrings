@@ -1,27 +1,108 @@
 {
-  "sourceLanguage" : "pt-BR",
-  "strings" : {
-    "ajustes" : {
-      "comment" : "Titulo da aba de ajustes",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "settings" } },
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "ajustes" } }
+  "sourceLanguage": "pt-BR",
+  "strings": {
+    "ajustes": {
+      "comment": "Titulo da aba de ajustes",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "settings"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ajustes"
+          }
+        }
       }
     },
-    "biblioteca" : {
-      "comment" : "Titulo da aba de biblioteca",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "library" } },
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "biblioteca" } }
+    "biblioteca": {
+      "comment": "Titulo da aba de biblioteca",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "library"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "biblioteca"
+          }
+        }
       }
     },
-    "player" : {
-      "comment" : "Titulo da aba do player",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "player" } },
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "player" } }
+    "notification.focus.title": {
+      "comment": "Notificacao: comeca um bloco de foco",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time to focus"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hora de focar"
+          }
+        }
+      }
+    },
+    "notification.longBreak.title": {
+      "comment": "Notificacao: comeca a pausa longa",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Long break"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pausa longa"
+          }
+        }
+      }
+    },
+    "notification.shortBreak.title": {
+      "comment": "Notificacao: comeca a pausa curta",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Short break"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pausa curta"
+          }
+        }
+      }
+    },
+    "player": {
+      "comment": "Titulo da aba do player",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "player"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "player"
+          }
+        }
       }
     }
   },
-  "version" : "1.0"
+  "version": "1.0"
 }

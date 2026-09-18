@@ -81,9 +81,9 @@ todas). A ordem real, apos a repriorizacao do PRD 16 e o novo escopo do PRD 17:
 | Ordem | Fase | Estado |
 |---|---|---|
 | 1o | **0** - Fundacao | **COMPLETA** - CI verde |
-| 2o | **2** - Persistencia | **PARCIAL** - os `@Model` existem; falta `PersistenceService` |
-| 3o | **3** - Pomodoro | **PARCIAL** - engine pronto e testado; falta `NotificationService` |
-| 4o | **4a** - Minimo usavel | A FAZER - **primeiro teste em iPhone** |
+| 2o | **2** - Persistencia | **COMPLETA** (2026-09-18) - `PersistenceService` sobre SwiftData |
+| 3o | **3** - Pomodoro | **COMPLETA no CI** (2026-09-18) - falta so o aceite em device, que depende da 4a |
+| 4o | **4a** - Minimo usavel | A FAZER - **proximo passo**; primeiro teste em iPhone |
 | 5o | **4b** - Interface completa + App Intents | A FAZER |
 | 6o | **1** - Audio | ADIADA para ca - `DSP.swift` escrito, falta o servico em volta |
 | 7o | **7** - Bloqueio de apps | NOVA - destravada pela **entitlement da Apple** |
@@ -116,17 +116,22 @@ Fica posicionada depois do audio de proposito: o tempo de fila e preenchido com 
 - > **Reescopada em 2026-09-18:** "seed do catalogo via JSON" e "CRUD de `Mix`" sairam daqui -
   > sao da trilha de audio e migraram para a Fase 1.
 
-### Fase 3 - Timer Pomodoro   **[PARCIAL]**
+### Fase 3 - Timer Pomodoro   **[COMPLETA NO CI - aceite em device pendente]**
 - **DoR:** nenhum.
-- **Ja existe e esta testado:** `PomodoroEngine` (maquina de estados ancorada em timestamp
-  absoluto, ADR-05, com reconciliacao de N transicoes perdidas em background - PRD 6.1/6.3) e
-  `LiveTimerService` (`@MainActor @Observable`) sobre o motor puro.
-- **Falta:** `Sources/Services/NotificationService.swift` e hoje **so um protocolo** (10 linhas).
-  Deve agendar as transicoes a partir do **`upcomingTransitions` que o engine ja expoe** - nao
-  recalcular datas por fora.
-- **Aceite (CI):** testes de reconciliacao com relogio injetado (ja verdes).
-  **Aceite (device):** iniciar 25 min, matar o app, esperar 30 min, reabrir -> o app sabe que o
-  bloco acabou e a notificacao disparou no instante certo.
+- **Entregue:** `PomodoroEngine` (maquina de estados ancorada em timestamp absoluto, ADR-05,
+  com reconciliacao de N transicoes perdidas em background - PRD 6.1/6.3), `LiveTimerService`
+  (`@MainActor @Observable`) e, em 2026-09-18, o **`LiveNotificationService`**: uma notificacao
+  local por transicao, agendada a partir do `upcomingTransitions` que o engine ja expoe (o
+  servico nao recalcula quando cada fase termina), por **data absoluta**, cancelando antes de
+  reagendar e sem tocar notificacao de outra origem.
+- **Aceite (CI):** ATENDIDO - reconciliacao com relogio injetado + 12 testes do agendamento.
+- **Aceite (device): PENDENTE, depende da Fase 4a** (nao ha como iniciar um Pomodoro sem tela):
+  iniciar 25 min, matar o app, esperar 30 min, reabrir -> o app sabe que o bloco acabou e a
+  notificacao disparou no instante certo. **Entra no checklist da 4a.**
+- > **Nota de concorrencia:** `UNNotificationRequest` nao e `Sendable` e nao pode cruzar
+  > fronteira de ator sob strict concurrency. Por isso existe `PendingNotification` (tipo
+  > proprio, `Sendable`): a traducao para o tipo do sistema acontece so na borda, em
+  > `SystemNotificationCenter`. Nao "simplificar" voltando a passar o tipo do framework.
 
 ### Fase 4a - Minimo usavel   **[A FAZER - primeiro teste em iPhone]**
 - **DoR:** Fases 2 e 3 fechadas. Para instalar no iPhone basta **Apple ID gratuito**
