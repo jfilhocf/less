@@ -50,7 +50,13 @@
 
 - ~~**[BLOQUEIO CI]** repo+push+CI~~ **RESOLVIDO 2026-09-08** (repo publico no ar, CI verde).
 - **[antes da Fase 6]** tornar o repo PRIVADO antes de adicionar a App Store Connect API key.
-- **[Joao, quando puder]** Apple Developer Program (US$ 99/ano) - iniciar cedo (prazo de dias).
+  Custo: acabam os minutos ilimitados de macOS no Actions (~200 min reais/mes).
+- **[JOAO - CAMINHO CRITICO, INICIAR AGORA]** Apple Developer Program (US$ 99/ano). Mudou de
+  prioridade em 2026-09-18: deixou de ser "so para submeter" e virou **pre-requisito para pedir
+  a entitlement de Family Controls** (Fase 7). Enquanto a conta nao existe, o pedido nem comeca.
+- **[JOAO - depois da membership]** solicitar a entitlement `com.apple.developer.family-controls`
+  no portal. **Prazo INCERTO** (relatos de semanas em 2026; ha casos de aprovacao por email com o
+  portal travado em "Submitted", bloqueando submissao). Cada extensao exige pedido separado.
 - ~~**[Mac]** provisionamento do Mac~~ **RESOLVIDO 2026-09-16** - Xcode 26.6, Homebrew,
   XcodeGen, `gh` e Claude Code instalados; repo clonado; build e 15 testes verdes localmente.
 - **[decisao adiada]** fonte dos arquivos de ambiente (.m4a) - por ora, so procedural.
@@ -73,14 +79,43 @@
 - **Servico:** `LiveTimerService` (`@MainActor @Observable`) sobre o motor puro.
 - **Testes Swift Testing:** `PomodoroEngineTests` + `DailyTaskRulesTests`. **CI VERDE** (15 testes OK, run 34865687552).
 
+## Novo escopo (2026-09-18) - bloqueio de distracao + ajustes de foco do iPhone
+
+**Mudanca autorizada pelo Joao** (ver PRD secao 17). O `less` passa a atuar tambem sobre a
+**fonte** da distracao, nao so sobre ambiente (audio) e tempo (Pomodoro).
+
+- **Bloqueio de apps de video curto - VIAVEL.** Screen Time APIs (`FamilyControls`,
+  `ManagedSettings`, `DeviceActivity`). Vira a **Fase 7**, destravada pela entitlement da Apple.
+- **Bloquear so os Reels/Shorts - IMPOSSIVEL.** O Screen Time opera no nivel do app; a Apple nao
+  expoe controle do que acontece dentro de app de terceiro. Nem o AppBlock faz isso. **O `less`
+  bloqueia o app inteiro** - e a copy precisa dizer isso. Alternativas descartadas no `BACKLOG.md`.
+- **Preto-e-branco e Modo Foco - INDIRETO.** Sem API publica; `SetFocusFilterIntent` so **reage**
+  a um Foco. Caminho: o `less` expoe **App Intents** e o usuario monta um Atalho que encadeia
+  Foco + filtro de cor + `less`. Entra na Fase 4b. (Saiu do `BACKLOG.md`, onde estava como
+  "fora do V1".)
+- **Fase 4 dividida:** `4a` minimo usavel (3 tarefas + tela de foco + Pomodoro + notificacao;
+  instala no iPhone com **Apple ID gratuita**, sem os US$ 99) e `4b` completa.
+- **Audio confirmado no V1**, depois da UI - o PRD define o produto como "player de audio
+  integrado a um timer Pomodoro".
+- **Guardrails intactos:** Screen Time e framework do sistema (2), offline e local (1), sem
+  coleta (3).
+
 ## Proximo passo
-- ~~Confirmar CI verde deste incremento~~ **CI VERDE 2026-09-14** (run 34865687552: compilou
-  limpo + 15 testes passaram). Nucleo de produtividade validado.
-- Depois: `PersistenceService`/servico de tarefas sobre SwiftData (criar/rolar/concluir usando
-  `DailyTaskRules`), `NotificationService` (agendar transicoes via `upcomingTransitions`), e a
-  UI da Fase 4 (lista de 3 tarefas + tela de foco). Audio retoma apos o nucleo de produtividade.
+- ~~Confirmar CI verde deste incremento~~ **CI VERDE 2026-09-14** (run 34865687552).
+- **Ordem de execucao atual** (ver ROADMAP secao 4.0 - numeracao != ordem):
+  1. **Fase 2** - `PersistenceService` sobre SwiftData (criar/rolar/concluir **reusando**
+     `DailyTaskRules`, sem reimplementar regra).
+  2. **Fase 3** - `NotificationService` (agendar via `upcomingTransitions`, que o engine ja expoe).
+  3. **Fase 4a** - minimo usavel -> **primeiro teste no iPhone do Joao**.
+  4. Depois: 4b (+ App Intents) -> Audio -> Fase 7 (bloqueio) -> Compliance -> Submissao.
 
 ## Historico
+- 2026-09-18 - **Documentacao sincronizada + novo escopo (PRD 17).** O `ROADMAP.md` estava
+  desatualizado em duas ondas (nao absorveu a repriorizacao de 14/09 e ainda descrevia o mundo
+  Windows/PAT); reescrito com **tabela de ordem de execucao** - a numeracao das fases virou
+  identificador estavel, nao ordem (ha ~45 referencias a "Fase N" em 6 docs; renumerar quebraria
+  35 delas). Nova Fase 7 (bloqueio), Fase 4 dividida em 4a/4b, audio confirmado no V1 apos a UI.
+  Pesquisa de viabilidade das 3 ideias novas registrada no PRD 17 e no BACKLOG.
 - 2026-08-29 - Projeto criado. PRD lido e reestruturado em 2 tracks (autoria Windows / build Mac)
   com Definition of Ready por fase. Fase 0 autorada (shell + build config + CI + docs). Repo local (e9fbfd5).
 - 2026-08-30 - Sessao encerrada. Fase 0 commitada e validada estruturalmente (YAML/JSON/plist);

@@ -600,3 +600,68 @@ tarefas ao less e simplifica o Pomodoro para dois presets fixos.
   A trilha de áudio (antiga Fase 1) fica adiada; o DSP procedural puro já está commitado e isolado.
 - Modelos afetados (seção 7): entra `FocusTask`; `FocusSession.mixID` vira `taskID`; sai
   `PomodoroConfig` (vira `PomodoroPreset`). Demais guardrails (seção 12) intactos.
+
+---
+
+## 17. Adendo (2026-09-18): Bloqueio de distração e ajustes de foco do iPhone
+
+Mudança de escopo **autorizada pelo João** (dono do produto). Até aqui o `less` atuava só sobre
+o *ambiente* do usuário (áudio) e sobre o *tempo* dele (Pomodoro). Passa a atuar também sobre a
+**fonte da distração**: bloquear os apps de vídeo curto durante o bloco de foco, e facilitar os
+ajustes do iPhone que reduzem estímulo.
+
+A tese continua a mesma do nome: menos. A diferença é que agora o app remove o que atrapalha,
+em vez de só oferecer o que ajuda.
+
+### 17.1 Bloqueio de apps de vídeo curto — **VIÁVEL, com permissão da Apple**
+
+Durante um bloco de foco, o usuário escolhe apps (TikTok, Instagram, YouTube, X…) que ficam
+bloqueados até o bloco terminar.
+
+- **Como:** `FamilyControls` (autorização + `FamilyActivityPicker`), `ManagedSettings` (o
+  *shield*) e `DeviceActivity` (as janelas de bloqueio, atreladas ao `PomodoroEngine`).
+- **Custo de permissão:** exige a entitlement `com.apple.developer.family-controls`, **aprovada
+  pela Apple** e solicitada por uma conta paga. Ver `PROVISIONING.md` — isso torna o Apple
+  Developer Program **caminho crítico**, e a fila de aprovação tem prazo incerto.
+- **Cada extensão exige pedido próprio** (Shield Action, Shield Configuration, Device Activity
+  Monitor), por bundle id, sob pena de falhar ao assinar em distribuição.
+
+> **Limite duro que não se contorna:** o Screen Time opera **no nível do app**, nunca dentro
+> dele. **Não existe API** para bloquear só os Reels ou só os Shorts deixando o resto do app
+> funcionando — a Apple não expõe controle sobre o que acontece dentro de um app de terceiro.
+> Nem o AppBlock, tomado como referência, faz isso: ele bloqueia o app inteiro. **O `less`
+> bloqueia o app inteiro.** Isso precisa estar claro na copy, para não prometer o que não entrega.
+
+### 17.2 Preto-e-branco e Modo Foco — **INDIRETO, via Atalhos**
+
+Ambos são ajustes do sistema e **nenhum app de terceiro os aciona sozinho**:
+
+- **Filtro de cor (preto-e-branco):** não há API pública. Existe a ação "Definir Filtros de Cor"
+  no app **Atalhos**.
+- **Modo Foco:** `SetFocusFilterIntent` serve para o app **reagir** a um Foco ativo, não para
+  **ativá-lo**. Ativar só pela ação "Definir Foco" no Atalhos.
+- **Exceções de contatos** (ligações que furam o Foco): configuração manual nos Ajustes do iOS.
+  Fora do alcance de qualquer app.
+
+**Caminho adotado:** o `less` expõe **App Intents** (`iniciar foco`, `pausar`, `concluir
+tarefa`) e o usuário monta **um Atalho** que encadeia Modo Foco → filtro de cor → iniciar o
+`less`, disparado por Siri, tela de início ou botão de Ação. É honesto (o usuário vê e autoriza
+cada passo) e é como apps sérios resolvem isso. Entra na Fase 4b.
+
+### 17.3 Avaliado e descartado
+
+Registrado com a razão técnica em `BACKLOG.md`, para não voltar do zero daqui a alguns meses:
+web app "limpo" no Safari (tira o usuário do app nativo) e classificador de gravação de tela
+on-device (**colide com a promessa de coleta zero** que sustenta o `PrivacyInfo.xcprivacy`).
+
+### 17.4 O que muda no roadmap
+
+- **Fase 7 (nova)** — bloqueio de apps. Destravada pela entitlement, não pela ordem de trabalho.
+- **Fase 4 dividida** — `4a` mínimo usável (3 tarefas + tela de foco + Pomodoro + notificação;
+  instala no iPhone com Apple ID gratuita) e `4b` completa (+ App Intents do 17.2).
+- **Ordem do áudio confirmada:** depois da UI, **dentro do V1** — o produto definido aqui é
+  "player de áudio integrado a um timer Pomodoro"; um V1 sem áudio seria outro produto.
+- **Apple Developer Program vira caminho crítico**, não mais item de fim de projeto.
+- **Guardrails (seção 12) intactos:** os frameworks de Screen Time são do **próprio sistema**
+  (2), funcionam **offline e localmente** (1) e **não coletam nada** (3). A Fase 5 passa a
+  considerar que apps de bloqueio recebem escrutínio extra na review.
