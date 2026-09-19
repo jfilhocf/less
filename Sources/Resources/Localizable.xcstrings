@@ -171,6 +171,108 @@
         }
       }
     },
+    "grayscale.section.body": {
+      "comment": "Honestidade sobre o passo irredutivel",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The shortcut turns on whichever filter is selected in your settings. Choosing grayscale is a manual step no app can do for you — but it's a one-time thing."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O atalho liga o filtro que estiver escolhido nos seus ajustes. Escolher a escala de cinza é um passo manual que nenhum app consegue fazer por você — mas é uma vez só."
+          }
+        }
+      }
+    },
+    "grayscale.section.title": {
+      "comment": "Titulo da secao do filtro de cor",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Black and white"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preto e branco"
+          }
+        }
+      }
+    },
+    "grayscale.step.1": {
+      "comment": "Passo 1 do grayscale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Control Center and tap Add a Control"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abra a Central de Controle e toque em Adicionar um Controle"
+          }
+        }
+      }
+    },
+    "grayscale.step.2": {
+      "comment": "Passo 2 do grayscale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search for Color Filters and add it"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Procure por Filtros de Cor e adicione"
+          }
+        }
+      }
+    },
+    "grayscale.step.3": {
+      "comment": "Passo 3 do grayscale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Press and hold the control, then choose Grayscale"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pressione e segure o controle, depois escolha Escala de Cinza"
+          }
+        }
+      }
+    },
+    "grayscale.step.4": {
+      "comment": "Passo 4 do grayscale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn it off. Done — now the shortcut knows which filter to use."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desligue. Pronto — agora o atalho sabe qual filtro usar."
+          }
+        }
+      }
+    },
     "intent.complete.description": {
       "comment": "Descricao da acao no Atalhos",
       "localizations": {
@@ -507,6 +609,193 @@
           "stringUnit": {
             "state": "translated",
             "value": "player"
+          }
+        }
+      }
+    },
+    "shortcut.install": {
+      "comment": "Botao que abre o link do atalho",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Install shortcut"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instalar atalho"
+          }
+        }
+      }
+    },
+    "shortcut.install.hint": {
+      "comment": "O que acontece ao tocar em instalar",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens the Shortcuts app, you review the actions and tap Add. Just once."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abre o app Atalhos, você confere as ações e toca em Adicionar. Uma vez só."
+          }
+        }
+      }
+    },
+    "shortcut.run": {
+      "comment": "Botao que dispara o atalho",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start focus with the shortcut"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Iniciar foco pelo atalho"
+          }
+        }
+      }
+    },
+    "shortcut.section.body": {
+      "comment": "Explica a secao e por que o atalho existe",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A shortcut that turns on the Work Focus, makes the screen black and white, and starts the block — all at once. iOS doesn't let any app do this on its own, so less hands you the shortcut ready-made."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Um atalho que liga o Modo Foco Trabalho, deixa a tela em preto e branco e começa o bloco — tudo de uma vez. O iPhone não deixa nenhum app fazer isso sozinho, então o less entrega o atalho pronto."
+          }
+        }
+      }
+    },
+    "shortcut.section.title": {
+      "comment": "Titulo da secao do Atalho",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One-tap focus"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Foco com um toque"
+          }
+        }
+      }
+    },
+    "shortcut.step.focus": {
+      "comment": "Passo 1 do atalho",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set Focus → Work"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Definir Foco → Trabalho"
+          }
+        }
+      }
+    },
+    "shortcut.step.grayscale": {
+      "comment": "Passo 2 do atalho",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set Color Filters → Turn On"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Definir Filtros de Cor → Ativar"
+          }
+        }
+      }
+    },
+    "shortcut.step.open": {
+      "comment": "Passo 4 do atalho",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open App → less"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir App → less"
+          }
+        }
+      }
+    },
+    "shortcut.step.start": {
+      "comment": "Passo 3 do atalho",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "less → Start focus"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "less → Iniciar foco"
+          }
+        }
+      }
+    },
+    "shortcut.steps.hide": {
+      "comment": "Fecha o passo a passo",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hide"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ocultar"
+          }
+        }
+      }
+    },
+    "shortcut.steps.show": {
+      "comment": "Abre o passo a passo",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "See how to build it"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver como montar"
           }
         }
       }
