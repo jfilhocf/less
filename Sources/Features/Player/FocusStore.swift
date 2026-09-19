@@ -117,26 +117,55 @@ final class FocusStore {
 
     func start(_ task: FocusTask, now: Date = .now) {
         do {
-            try persistence.startPomodoro(on: task, at: now)
-            activeTask = task
-            timer.start(preset: task.preset, at: now)
-            startTicking()
-            Task {
-                // Permissao pedida AQUI, no primeiro bloco iniciado - nao no launch. Pedir
-                // antes de a pessoa entender para que serve so ensina a recusar.
-                await self.requestNotificationPermission()
-                await self.rescheduleNotifications(from: now, now: now)
-            }
+            try startBlock(task, now: now)
+            Task { await self.finishStart(now: now) }
         } catch {
             errorMessage = String(localized: "error.save")
         }
     }
 
+    /// Parte SINCRONA de iniciar: o que precisa estar em disco e em tela imediatamente.
+    /// Separada de proposito - ver `finishStart(now:askPermission:)`.
+    func startBlock(_ task: FocusTask, now: Date = .now) throws {
+        try persistence.startPomodoro(on: task, at: now)
+        activeTask = task
+        timer.start(preset: task.preset, at: now)
+        startTicking()
+    }
+
+    /// Parte ASSINCRONA de iniciar: permissao e agendamento das notificacoes.
+    ///
+    /// E publica e aguardavel porque quem inicia um bloco por **App Intent** precisa poder
+    /// esperar por ela. Num intent, `perform()` retorna e o sistema pode suspender ou matar
+    /// o processo em seguida: um `Task { }` solto nao roda, o bloco comeca e a notificacao
+    /// de transicao **nunca e agendada**. Pela interface o `Task { }` basta, porque o app
+    /// segue vivo na tela.
+    ///
+    /// `askPermission` fica `false` quando nao ha como mostrar prompt (app em background).
+    func finishStart(now: Date = .now, askPermission: Bool = true) async {
+        if askPermission {
+            // Permissao pedida no primeiro bloco iniciado, nunca no launch: pedir antes de a
+            // pessoa entender para que serve so ensina a recusar.
+            await requestNotificationPermission()
+        }
+        await rescheduleNotifications(from: now, now: now)
+    }
+
     func pause(now: Date = .now) {
+        pauseBlock(now: now)
+        Task { await self.cancelNotifications() }
+    }
+
+    /// Parte sincrona de pausar.
+    func pauseBlock(now: Date = .now) {
         timer.pause(at: now)
         stopTicking()
-        // Pausado nao tem transicao prevista: deixar notificacao agendada mentiria.
-        Task { await self.notifications.cancelAll() }
+    }
+
+    /// Cancela as notificacoes pendentes. Aguardavel pelo mesmo motivo de `finishStart`.
+    /// Pausado nao tem transicao prevista: deixar notificacao agendada mentiria.
+    func cancelNotifications() async {
+        await notifications.cancelAll()
     }
 
     func resume(now: Date = .now) {
@@ -175,7 +204,7 @@ final class FocusStore {
         activeTask = nil
         timer.reset()
         stopTicking()
-        Task { await self.notifications.cancelAll() }
+        Task { await self.cancelNotifications() }
     }
 
     func requestNotificationPermission() async {

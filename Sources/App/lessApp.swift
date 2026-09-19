@@ -3,16 +3,14 @@ import SwiftData
 
 /// Ponto de entrada do app.
 ///
-/// Fase 2: o `ModelContainer` do SwiftData entra aqui e desce pela `@Environment`.
-/// A injecao do `AudioEngineService` (Fase 1, adiada) e do `NotificationService`
-/// (Fase 3) chega conforme as fases avancam. Ver ROADMAP.md.
+/// `init()` e o unico codigo garantido a rodar quando o sistema sobe o app **em background**
+/// - por um App Intent vindo do Atalhos, por exemplo, sem View nenhuma montada. Por isso o
+/// `ModelContainer` e o `FocusStore` nascem aqui, no `FocusRuntime`, e nao dentro de uma tela.
 @main
 struct LessApp: App {
-    private let container: ModelContainer
-
     init() {
         do {
-            container = try .less()
+            try FocusRuntime.installLive()
         } catch {
             // Sem store nao ha app: falhar alto e melhor que rodar com estado fantasma.
             fatalError("Falha ao abrir o ModelContainer do SwiftData: \(error)")
@@ -23,6 +21,9 @@ struct LessApp: App {
         WindowGroup {
             RootView()
         }
-        .modelContainer(container)
+        // Mesmo container do `FocusRuntime`, de proposito: se um dia entrar um `@Query` na
+        // arvore, ele le do MESMO store que o `FocusStore` grava. Fecha a porta dos dois
+        // containers sobre o mesmo arquivo, que falharia em silencio.
+        .modelContainer(FocusRuntime.container)
     }
 }
