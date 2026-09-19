@@ -85,7 +85,7 @@ todas). A ordem real, apos a repriorizacao do PRD 16 e o novo escopo do PRD 17:
 | 3o | **3** - Pomodoro | **COMPLETA** (2026-09-18) - reconciliacao verificada no simulador |
 | 4o | **4a** - Minimo usavel | **COMPLETA** (2026-09-18) - falta so o **uso real pelo Joao** |
 | 5o | **4b** - Interface completa + App Intents | A FAZER |
-| 6o | **1** - Audio | ADIADA para ca - `DSP.swift` escrito, falta o servico em volta |
+| 6o | **1** - Audio | **MOTOR PRONTO** (2026-09-19) - falta ligar na interface (4b) e aceite em device |
 | 7o | **7** - Bloqueio de apps | NOVA - destravada pela **entitlement da Apple** |
 | 8o | **5** - Compliance | A FAZER |
 | 9o | **6** - Device e submissao | A FAZER |
@@ -169,16 +169,28 @@ Fica posicionada depois do audio de proposito: o tempo de fila e preenchido com 
 - **Aceite (device):** VoiceOver completo; Dynamic Type ate `accessibility3` sem
   sobreposicao; Reduce Motion respeitado.
 
-### Fase 1 - Motor de audio   **[ADIADA - entra depois da UI, ainda no V1]**
+### Fase 1 - Motor de audio   **[MOTOR PRONTO - falta ligar na interface]**
 - **DoR:** nenhum recurso externo para binaural+ruido. (Ambientes: adiados ate ter os `.m4a`.)
-- **Ja existe:** `Sources/Services/Audio/DSP.swift` - sintese procedural pura (binaural, ruido,
-  fade), commitada e **isolada**, sem nada ligado nela.
-- **Falta:** `AudioEngineService` em volta do DSP - grafo (5.1), binaural nos limites (5.2),
-  ruido branco/rosa/marrom (5.4), mixagem ate 4 camadas, fades 300 ms, `AVAudioSession` +
-  interrupcao/rota (5.6). Ambiente por arquivo fica com a estrutura pronta e stub.
-  **+ recebido da Fase 2:** seed do catalogo via JSON no bundle e CRUD de `Mix`.
-- **Aceite (CI):** o grafo constroi e a matematica de sintese passa em testes unitarios.
-  **Aceite (device):** 30 min em background sem glitch; responde ao botao do fone.
+- **Entregue (2026-09-19):**
+  - `AudioRenderer` - o mix inteiro em codigo puro: binaural com portadora/batimento
+    **presos nos limites do 5.2**, ruido branco/rosa/marrom procedural (5.4), teto de 4
+    camadas (5.1), fade de 300 ms na entrada e na saida, e um limitador suave que impede o
+    somatorio de estourar o fundo de escala;
+  - `LiveAudioEngineService` - grafo do `AVAudioEngine` com `AVAudioSourceNode`,
+    `AVAudioSession` `.playback` e tratamento de **interrupcao** (chamada) e **mudanca de
+    rota** (fone removido pausa), PRD 5.6;
+  - `ValueRamp` no DSP, para mudanca de frequencia ser **interpolada, nunca em degrau** (5.2).
+- **Aceite (CI): ATENDIDO** - 14 testes que **medem o sinal gerado**, nao so o codigo:
+  contam cruzamentos por zero para conferir a frequencia de cada canal, medem o pico para o
+  teto de amplitude, e observam o ganho subindo/descendo para conferir os fades.
+- **Falta para fechar a fase:**
+  - **ligar na interface** - nao ha controle de audio em tela nenhuma ainda (vai na 4b, junto
+    de `MPNowPlayingInfoCenter`/`MPRemoteCommandCenter` e do aviso de fone do 5.7, para o qual
+    o servico ja expoe `isOutputMono`);
+  - **aceite em device:** 30 min em background sem glitch, responde ao botao do fone. So no
+    iPhone - simulador nao prova nada sobre estabilidade de audio.
+  - **ambientes por arquivo (5.5):** seguem adiados ate haver `.m4a` licenciados; o lugar
+    deles no grafo esta reservado. **+ recebido da Fase 2:** seed do catalogo e CRUD de `Mix`.
 - > **Por que aqui:** repriorizado em 2026-09-14 (PRD 16.3) para o nucleo de produtividade vir
   > antes. Posicao confirmada em 2026-09-18: depois da UI, **dentro do V1** - o PRD define o
   > produto como "player de audio integrado a um timer Pomodoro", entao o V1 sai completo.

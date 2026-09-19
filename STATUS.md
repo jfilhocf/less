@@ -157,10 +157,41 @@
 - **`seedDemo`** em `#if DEBUG` popula o dia via argumento de launch (`-seedDemo`,
   `-seedRunning`) para inspecionar a interface no simulador. **Nao existe no build de release.**
 
+## Feito nesta sessao (2026-09-19) - FASE 1: O MOTOR DE AUDIO EXISTE
+
+Adiantado enquanto o Joao nao instala o app no iPhone - o audio **nao depende** do feedback
+de uso das tarefas, entao da para andar em paralelo sem construir as cegas.
+
+- **`AudioRenderer`**: o mix inteiro em codigo puro (sem AVFoundation), o que permite
+  **medir o sinal no CI**. Binaural com portadora/batimento presos nos limites do PRD 5.2,
+  ruido branco/rosa/marrom procedural, teto de 4 camadas, fade de 300 ms entrando e saindo,
+  limitador suave contra estouro do somatorio.
+- **`LiveAudioEngineService`**: grafo do `AVAudioEngine` com `AVAudioSourceNode`,
+  `AVAudioSession` `.playback`, **interrupcao** (chamada pausa) e **mudanca de rota**
+  (tirar o fone pausa) - PRD 5.6.
+- **`ValueRamp`** no DSP: mudanca de frequencia interpolada, nunca em degrau (5.2).
+- **14 testes novos** (total: **65 em 7 suites**, verdes, zero warning). Eles medem o sinal
+  de verdade: contam cruzamentos por zero para conferir a frequencia de cada canal, medem
+  pico para o teto de amplitude, comparam a variacao entre amostras para provar que o ruido
+  marrom e mais grave que o branco.
+- **Decisao de thread:** os parametros chegam ao render por `withLockIfAvailable` - se a
+  trava estiver ocupada naquele instante, o render segue com os valores anteriores em vez de
+  esperar. Um bloco de atraso e inaudivel; um bloco perdido vira estalo (guardrail 12.11).
+- **Concorrencia:** `Notification` nao e `Sendable`; os valores sao extraidos antes de cruzar
+  para a main actor. Terceira vez que o Swift 6 barra um design e esta certo.
+
+### O que a Fase 1 ainda NAO tem
+- **Nao ha controle de audio em tela nenhuma** - o motor existe e e testado, mas ninguem o
+  aciona ainda. Ligar na interface e da 4b.
+- **Aceite em device pendente:** 30 min em background sem glitch e resposta ao botao do fone.
+  Simulador nao prova estabilidade de audio.
+- **Ambientes por arquivo (5.5) seguem adiados** - falta decidir a fonte dos `.m4a`.
+
 ## Proximo passo
 - ~~**Fase 2** - `PersistenceService`~~ **FEITA 2026-09-18** (26 testes).
 - ~~**Fase 3** - `NotificationService`~~ **FEITA 2026-09-18** (38 testes).
 - ~~**Fase 4a** - minimo usavel~~ **CONSTRUIDA 2026-09-18** (51 testes).
+- ~~**Fase 1** - motor de audio~~ **PRONTO 2026-09-19** (65 testes).
 - **AGORA E COM O JOAO: usar o app no proprio iPhone, no proprio dia.** Instala com Apple ID
   gratuita (7 dias), sem os US$ 99. E o unico jeito de saber se as regras que ele inventou
   (teto de 3, rolagem que ocupa vaga) funcionam na pratica - e se a notificacao dispara certo

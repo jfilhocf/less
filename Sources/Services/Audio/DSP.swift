@@ -132,6 +132,45 @@ struct NoiseGenerator {
 
 // MARK: - Rampa de fade (PRD 5.2: fade in/out de 300 ms para eliminar clique)
 
+/// Rampa de um parametro qualquer (Hz, por exemplo) rumo a um alvo, em passo constante
+/// por amostra. Serve ao PRD 5.2: "mudanca de frequencia em tempo real deve ser
+/// interpolada, nunca aplicada em degrau" - saltar de 200 Hz para 300 Hz de uma amostra
+/// para a outra produz um estalo audivel.
+///
+/// Difere da `LinearRamp` por nao ter limite 0..1: frequencia nao e ganho.
+struct ValueRamp {
+    private(set) var current: Double
+    private var target: Double
+    /// Passo por amostra, em unidades do parametro por segundo / sampleRate.
+    private let step: Double
+
+    init(sampleRate: Double, durationMs: Double = 300, initial: Double, span: Double = 1) {
+        current = initial
+        target = initial
+        // `span` e a variacao de referencia que deve levar `durationMs` para completar.
+        step = abs(span) / (sampleRate * durationMs / 1000.0)
+    }
+
+    mutating func setTarget(_ value: Double) {
+        target = value
+    }
+
+    mutating func next() -> Double {
+        if current < target {
+            current = min(current + step, target)
+        } else if current > target {
+            current = max(current - step, target)
+        }
+        return current
+    }
+
+    /// Salta direto para o alvo (uso: primeira configuracao, quando nao ha o que suavizar).
+    mutating func snap(to value: Double) {
+        current = value
+        target = value
+    }
+}
+
 /// Suaviza o ganho de uma camada de 0..1 rumo a um alvo, em passo constante por amostra.
 /// Uma transicao de 0 para 1 (ou vice-versa) leva `durationMs` (padrao 300 ms). Isso
 /// remove clique em toda mudanca de estado e da o crossfade entre valores de volume.
