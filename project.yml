@@ -48,6 +48,10 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         CODE_SIGN_STYLE: Automatic
+        # Time de assinatura. Precisa estar AQUI e nao so no Xcode: o .xcodeproj e gerado
+        # e esta no .gitignore, entao o que se configura pela interface some no proximo
+        # `xcodegen generate`. Com Apple ID gratuita o app instala e vale 7 dias.
+        DEVELOPMENT_TEAM: G5D4SX8763
 
   lessTests:
     type: bundle.unit-test

@@ -46,6 +46,36 @@ xcodebuild test -project less.xcodeproj -scheme less \
 > / Air, runtime iOS 26.5) - o comando quebrava. Resolver o UDID em tempo de execucao, como
 > o `ci.yml` ja fazia, sobrevive a qualquer atualizacao do Xcode.
 
+## 3.5 Rodar no iPhone SEM pagar os US$ 99 - CONCLUIDO 2026-09-19
+
+Free provisioning: assina com **Apple ID gratuita**, instala no aparelho e **vale 7 dias**
+(depois e so reinstalar). Funcionou no iPhone 15 Pro Max do Joao.
+
+**Configuracao (uma vez):**
+1. Xcode -> Settings -> Accounts -> `+` -> Apple ID. Aparece o "Personal Team".
+2. Abrir `less.xcodeproj`, target `less` -> Signing & Capabilities -> marcar
+   *Automatically manage signing* e escolher o Team. O Xcode cria o certificado e o perfil.
+3. **Fixar o time no `project.yml`** (`DEVELOPMENT_TEAM`), nunca so no Xcode: o `.xcodeproj`
+   e gerado e esta no `.gitignore` - o que se mexe pela interface some no proximo
+   `xcodegen generate`. Time atual: `G5D4SX8763`.
+4. No **iPhone**: Ajustes -> Privacidade e Seguranca -> **Modo de Desenvolvedor** -> ativar ->
+   reiniciar. (A opcao so aparece depois da primeira tentativa de instalacao.)
+5. No **iPhone**: Ajustes -> Geral -> VPN e Gerenciamento de Dispositivo -> tocar no
+   certificado `Apple Development: ...` -> **Confiar**. Sem isso o app instala mas nao abre.
+
+**Instalar (repetir a cada 7 dias ou a cada mudanca):**
+```bash
+xcodegen generate
+xcodebuild build -project less.xcodeproj -scheme less \
+  -destination 'generic/platform=iOS' -allowProvisioningUpdates
+
+DEVICE=$(xcrun devicectl list devices | grep -i iphone | awk '{print $4}')
+APP=$(ls -d ~/Library/Developer/Xcode/DerivedData/less-*/Build/Products/Debug-iphoneos/less.app | head -1)
+xcrun devicectl device install app --device "$DEVICE" "$APP"
+```
+> Na primeira assinatura o macOS pede autorizacao para o `codesign` usar a chave do Keychain -
+> responder **Sempre Permitir** (pede a senha de login do Mac, nao a do Apple ID).
+
 ## 4. Provisionar a conta Apple (quando for assinar) - ver PROVISIONING.md
 - Inscrever no **Apple Developer Program** (US$ 99/ano).
 - No Xcode: Signing & Capabilities -> selecionar o Team; ajustar `DEVELOPMENT_TEAM` e,

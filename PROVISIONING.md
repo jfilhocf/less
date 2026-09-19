@@ -30,7 +30,7 @@ pronto quando a fase chegar.
 | **Entitlement `com.apple.developer.family-controls`** | **Fase 7** (bloqueio de apps) | free (com a membership) | **INCERTO** - relatos de semanas em 2026 | Joao solicita no portal; exige membership ativa | **A SOLICITAR** assim que a membership existir |
 | App Store Connect API key (Team Key) | Fase 6 (upload via CI) | free (com a membership) | minutos | Joao gera; guardar como secret | depende da membership |
 | iPhone fisico iOS 17+ | Fase 4a (primeiro teste) e Fase 6 (aceite) | ja tem | - | Joao | **PRONTO** - Joao tem o modelo atual |
-| Apple ID gratuita (free provisioning) | **Fase 4a** (instalar no iPhone sem pagar) | free | minutos | Joao loga no Xcode | a fazer na Fase 4a - app expira em 7 dias, basta reinstalar |
+| Apple ID gratuita (free provisioning) | **Fase 4a** (instalar no iPhone sem pagar) | free | minutos | Joao loga no Xcode | **PRONTO 2026-09-19** - time `G5D4SX8763`, app rodando no iPhone 15 Pro Max; expira em 7 dias, basta reinstalar |
 | Screenshots da App Store | Fase 6 | free (simulador/device) | horas | agente/Joao | depois |
 
 ## APIs / MCPs - o que NAO e necessario

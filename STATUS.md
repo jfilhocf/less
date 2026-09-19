@@ -187,16 +187,34 @@ de uso das tarefas, entao da para andar em paralelo sem construir as cegas.
   Simulador nao prova estabilidade de audio.
 - **Ambientes por arquivo (5.5) seguem adiados** - falta decidir a fonte dos `.m4a`.
 
+## MARCO 2026-09-19: O APP ESTA RODANDO NO IPHONE
+
+Primeira vez que o `less` sai do simulador. Instalado no **iPhone 15 Pro Max** do Joao com
+**Apple ID gratuita** (free provisioning, sem os US$ 99), app aberto e **primeira tarefa
+criada no aparelho**.
+
+- **Time de assinatura `G5D4SX8763`** fixado no `project.yml` - nao basta configurar no Xcode,
+  porque o `.xcodeproj` e gerado e esta no `.gitignore`.
+- Passos que o iOS exige e que nao sao obvios (documentados no `MAC-HANDOFF.md` secao 3.5):
+  **Modo de Desenvolvedor** no iPhone (so aparece apos a primeira tentativa de instalacao,
+  e exige reiniciar) e **confiar no certificado** em Gerenciamento de Dispositivo - sem isso
+  o app instala mas nao abre.
+- **O build expira em 7 dias** (limite do free provisioning). Reinstalar e um comando; o
+  procedimento esta no MAC-HANDOFF.
+
 ## Proximo passo
 - ~~**Fase 2** - `PersistenceService`~~ **FEITA 2026-09-18** (26 testes).
 - ~~**Fase 3** - `NotificationService`~~ **FEITA 2026-09-18** (38 testes).
 - ~~**Fase 4a** - minimo usavel~~ **CONSTRUIDA 2026-09-18** (51 testes).
 - ~~**Fase 1** - motor de audio~~ **PRONTO 2026-09-19** (65 testes).
-- **AGORA E COM O JOAO: usar o app no proprio iPhone, no proprio dia.** Instala com Apple ID
-  gratuita (7 dias), sem os US$ 99. E o unico jeito de saber se as regras que ele inventou
-  (teto de 3, rolagem que ocupa vaga) funcionam na pratica - e se a notificacao dispara certo
-  com o aparelho bloqueado. **Nao construir a 4b antes desse retorno**: seria construir Ajustes
-  em volta de uma regra ainda nao validada.
+- ~~instalar no iPhone~~ **FEITO 2026-09-19** - app rodando no aparelho.
+- **AGORA E COM O JOAO: usar o app no proprio dia.** E o unico jeito de saber se as regras
+  que ele inventou (teto de 3, rolagem que ocupa vaga) funcionam na pratica - e se a
+  notificacao dispara certo com o aparelho bloqueado. **Nao construir a 4b antes desse
+  retorno**: seria construir Ajustes em volta de uma regra ainda nao validada.
+- **Checklist do que observar no uso real:** o teto de 3 ajuda ou irrita? A rolagem que ocupa
+  vaga e disciplina ou punicao? A notificacao de transicao chega na hora com o iPhone
+  bloqueado? Falta algo obvio para o dia funcionar?
 - Depois: 4b (+ App Intents) -> Audio -> Fase 7 (bloqueio) -> Compliance -> Submissao.
 
 ## Historico
