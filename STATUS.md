@@ -274,6 +274,42 @@ Do audit, para nao redescobrir na marra:
 - **Copy das frequencias**: so os rotulos da tabela do PRD 5.3, e o **disclaimer do 10.2 e
   obrigatorio** na tela de detalhe do binaural.
 
+## Sessao 2026-09-19 (parte 3) - uso real, e o que ele revelou
+
+O Joao usou o app no iPhone e reportou tres coisas. As tres eram defeitos meus, e duas
+so apareceram porque ele usou - nenhum teste pegaria.
+
+**1. Tarefa concluida travava o app.** `complete()` existia sem contrapartida e o apagar
+so vivia num `contextMenu` cujo toque longo era engolido pelos Buttons da propria linha.
+Com as 3 concluidas, `canCreate` vira false e o campo de adicionar some: sem apagar e sem
+adicionar, o app ficava travado ate o dia virar. Corrigido com `List` + `swipeActions`
+(swipe so existe em List) e rodape que orienta em vez de so bloquear.
+**Licao: teste de store nao cobre gesto. Interface se confere na tela.**
+
+**2. O Atalho morria no meio.** Diagnostico de 4 agentes CONFIRMOU no aparelho: as 3
+tarefas do dia estavam concluidas, `StartFocusIntent` lancou `.noPendingTask`, e **o app
+Atalhos aborta o fluxo inteiro na acao que falha** - a acao 4 ("Abrir App") nunca rodou.
+Nao ha "continuar em caso de erro" no Atalhos.
+
+**3. Decisao de produto que eu assumi errado:** o app exigia tarefa para focar. O Joao:
+"ele pode simplesmente querer utilizar o timer". Entra o **bloco livre** - foco sem tarefa,
+ancorado em `AppSettings`, sobrevive ao app morrer, conta para a estatistica com
+`taskID` nil. `StartFocusIntent` inicia bloco livre em vez de falhar, e o Atalho segue
+ate o fim.
+
+**4. Filtro de cor:** "Definir Filtros de Cor -> Ativar" liga a chave mestra, e ela liga o
+filtro que JA estiver escolhido. O Joao pre-selecionou Escala de Cinza e **passou a
+funcionar**. ATENCAO: o diagnostico apontou que o tutorial dentro do app
+(`grayscale.step.3`, caminho pela Central de Controle) pode estar errado - **verificar e
+corrigir o texto**.
+
+### PENDENTE - primeira coisa da proxima sessao
+**O Joao relatou que o Atalho ainda falha** ("tudo deu certo exceto o atalho"), mesmo
+depois do bloco livre (commit 49017dc). O filtro de cor agora executa. **Falta descobrir
+o que ainda quebra** - perguntar a ele o sintoma exato: o app abre? o bloco inicia? o
+Foco liga? E conferir a ordem das 4 acoes no atalho dele (ele havia criado 4 atalhos
+separados em vez de 1 com 4 acoes; pode ter sobrado algo).
+
 ## Proximo passo
 - ~~**Fase 2** - `PersistenceService`~~ **FEITA 2026-09-18** (26 testes).
 - ~~**Fase 3** - `NotificationService`~~ **FEITA 2026-09-18** (38 testes).
@@ -281,8 +317,33 @@ Do audit, para nao redescobrir na marra:
 - ~~**Fase 1** - motor de audio~~ **PRONTO 2026-09-19** (65 testes).
 - ~~**4b passo 0** - dono unico + efeitos aguardaveis~~ **FEITO 2026-09-19** (82 testes).
 - ~~**4b item 1** - App Intents / Atalhos~~ **FEITO 2026-09-19** (95 testes).
-- **AGORA: 4b item 2 - ligar o audio na interface.** O motor existe e e testado, mas nenhuma
+- ~~4b item 1 - App Intents~~ **FEITO 2026-09-19** (com bloco livre e correcoes de uso real).
+- **PRIMEIRO: destravar o Atalho do Joao** (ver PENDENTE acima) e corrigir o tutorial do
+  filtro de cor.
+- **Depois: publicar o link iCloud do atalho** em `ShortcutSetup.iCloudLink` - o Joao monta
+  uma vez e o botao "Instalar atalho" passa a entregar pronto em 2 toques.
+- **Depois: 4b item 2 - ligar o audio na interface.** O motor existe e e testado, mas nenhuma
   tela o aciona. Ver as armadilhas ja mapeadas acima antes de comecar.
+
+### Descobertas da pesquisa de capacidades (10 agentes, 2026-09-19)
+Registrado porque muda decisoes e custou muito para levantar:
+- **Family Controls exige APPLE_DEVELOPER_PROGRAM ate em DESENVOLVIMENTO**
+  (`validTeamTypes` no catalogo do portal). Com Apple ID gratuita **nao roda bloqueio nem
+  para testar**. O `PROVISIONING.md` subestima isso.
+- **Bloquear so os Reels: "impossivel" estava ERRADO.** Impossivel com Screen Time, sim -
+  mas o **WallHabit** faz via ReplayKit (transmite a tela e analisa). Recusado aqui por
+  colidir com a coleta zero, o que e escolha, nao limite.
+- **Grayscale: "nao existe API" estava ERRADO.** Existe `AXFeatureOverrideSessionManager`
+  (iOS 18.2+, no SDK), publica e distribuivel, atras da entitlement
+  `accessibility.merchant-api-control` - que **nao tem formulario publico** de pedido.
+  Inalcancavel na pratica, mas a classificacao certa e "existe e tem dono", nao "nao existe".
+- **Nenhum app liga Foco ou preto-e-branco sozinho** - verificado em Opal, Jomo, one sec,
+  Brick, Roots, Clearspace e num app cujo unico proposito e grayscale. Nao ha truque.
+- **AlarmKit nao exige capability nenhuma** e funciona com conta gratuita - por isso entrou.
+- **DeviceActivity `eventDidReachThreshold` esta QUEBRADO** desde o iOS 26 (bug aberto da
+  Apple). Se a Fase 7 depender de "usou 10 min -> bloqueia", esta em cima de algo quebrado.
+  Desenhar por **janela de horario**.
+- **Nao atualizar o iPhone para iOS 27 antes do Xcode 27** - a maquina so tem SDK 26.5.
 - ~~instalar no iPhone~~ **FEITO 2026-09-19** - app rodando no aparelho.
 - **AGORA E COM O JOAO: usar o app no proprio dia.** E o unico jeito de saber se as regras
   que ele inventou (teto de 3, rolagem que ocupa vaga) funcionam na pratica - e se a
