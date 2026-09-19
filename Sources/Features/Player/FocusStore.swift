@@ -58,23 +58,40 @@ final class FocusStore {
     /// de contagem acumulada, vem da diferenca entre a ancora e o relogio de agora.
     func refresh(now: Date = .now) {
         do {
-            rolledOverCount = try persistence.rollOverPendingTasks(now: now)
-            try reload(now: now)
-
-            if let running = try persistence.activeTask(), let anchor = running.startedAt {
-                activeTask = running
-                timer.start(preset: running.preset, at: anchor)
-                timer.reconcile(now: now)
-                startTicking()
+            let anchor = try reloadState(now: now)
+            if let anchor {
                 Task { await self.rescheduleNotifications(from: anchor, now: now) }
-            } else {
-                activeTask = nil
-                stopTicking()
             }
-            errorMessage = nil
         } catch {
             errorMessage = String(localized: "error.load")
         }
+    }
+
+    /// Parte SINCRONA do refresh: rolagem do dia + reconstrucao do Pomodoro a partir da
+    /// ancora em disco. Devolve a ancora quando ha bloco ativo, para o chamador decidir se
+    /// reagenda as notificacoes.
+    ///
+    /// Existe separada porque `refresh` reagendava notificacoes num `Task { }` solto - e
+    /// quem chamava `refresh` antes de PAUSAR corria contra o proprio cancelamento: o
+    /// reagendamento podia pousar depois do cancel e deixar agendada a transicao de um bloco
+    /// pausado. Quem pausa usa esta versao e nao reagenda nada.
+    @discardableResult
+    func reloadState(now: Date = .now) throws -> Date? {
+        rolledOverCount = try persistence.rollOverPendingTasks(now: now)
+        try reload(now: now)
+
+        guard let running = try persistence.activeTask(), let anchor = running.startedAt else {
+            activeTask = nil
+            stopTicking()
+            errorMessage = nil
+            return nil
+        }
+        activeTask = running
+        timer.start(preset: running.preset, at: anchor)
+        timer.reconcile(now: now)
+        startTicking()
+        errorMessage = nil
+        return anchor
     }
 
     // MARK: Tarefas
@@ -234,7 +251,8 @@ final class FocusStore {
     /// o intent AGUARDA antes de retornar - senao o processo pode ser suspenso no meio.
     @discardableResult
     func startNextPendingTask(now: Date = .now) throws -> String {
-        refresh(now: now)
+        // versao sincrona: reagendar aqui correria contra o cancelamento do proprio intent
+        try? reloadState(now: now)
         guard activeTask == nil else { throw ActionError.alreadyFocusing }
         guard let next = tasks.first(where: { !$0.isCompleted }) else {
             throw ActionError.noPendingTask
@@ -249,7 +267,8 @@ final class FocusStore {
 
     /// Pausa o bloco em andamento.
     func pauseFocus(now: Date = .now) throws {
-        refresh(now: now)
+        // versao sincrona: reagendar aqui correria contra o cancelamento do proprio intent
+        try? reloadState(now: now)
         guard activeTask != nil, isRunning else { throw ActionError.notFocusing }
         pauseBlock(now: now)
     }
@@ -257,7 +276,8 @@ final class FocusStore {
     /// Conclui a tarefa em foco. Devolve o titulo concluido.
     @discardableResult
     func completeActiveTask(now: Date = .now) throws -> String {
-        refresh(now: now)
+        // versao sincrona: reagendar aqui correria contra o cancelamento do proprio intent
+        try? reloadState(now: now)
         guard let task = activeTask else { throw ActionError.notFocusing }
         let title = task.title
         complete(task, now: now)

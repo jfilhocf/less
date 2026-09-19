@@ -202,11 +202,87 @@ criada no aparelho**.
 - **O build expira em 7 dias** (limite do free provisioning). Reinstalar e um comando; o
   procedimento esta no MAC-HANDOFF.
 
+## Feito nesta sessao (2026-09-19) - AUDITORIA + PASSO 0 + APP INTENTS
+
+### Auditoria de codigo por workflow (parcialmente falha, e ainda assim o melhor achado)
+Rodado um workflow de 11 agentes para mapear e desenhar as duas features da 4b. **Os dois
+agentes sintetizadores travaram** (6 tentativas cada) e o resultado veio com `plans: []`. Os
+4 mapeamentos e os 4 designs ficaram salvos no journal e foram recuperados de la. O agente
+critico, ao receber planos vazios, **foi auditar o codigo real por conta propria** - e achou
+um bug de producao. Os designs recuperados estao em
+`scratchpad/wf-recovered.json` (efemero; o que importa virou codigo e este registro).
+
+### Bug corrigido: estatistica de foco inflada
+`FocusStore.stop()` gravava `effectiveSeconds` como `now - anchor` - relogio de parede,
+contando pausas curtas, longas e tempo pausado como foco. O `FocusSession.swift` documenta,
+na linha de cima, "descontadas pausas do usuario". **25+5+25 = 55 min de relogio e 50 de
+foco**; o app ja estava no iPhone do Joao gerando numero inflado em silencio. Introduzido na
+Fase 4a por mim. Agora `PomodoroEngine.focusedSeconds(elapsed:)` soma so os segmentos de foco,
+e `LiveTimerService` expoe `elapsed` (ja sem o tempo pausado).
+
+### Passo 0: dono unico do ModelContainer e do FocusStore
+`FocusRuntime` (`Sources/App/FocusRuntime.swift`) passa a ser dono unico, fora da SwiftUI.
+**Motivo 1:** um App Intent sobe o app em background, sem View montada - o store nascia em
+`PlayerView.task` e nao existiria nesse caminho. **Motivo 2:** `ModelContainer.less()` e
+FACTORY; dois containers sobre o mesmo `less.store` fariam o intent gravar num e a tela ler
+do outro, **sem erro nenhum**. Por isso `FocusRuntime` nao tem fallback preguicoso: acessar
+sem instalar para o programa. Ha teste comparando `ObjectIdentifier` para garantir um so.
+
+### Passo 0b: efeitos colaterais aguardaveis (defeito S7 do audit)
+As acoes do store disparavam `Task { }` solto. Num intent, `perform()` retorna e o sistema
+suspende o processo **antes** do Task rodar: o bloco comecaria e a notificacao de transicao
+nunca seria agendada. Agora cada acao tem parte sincrona (`startBlock`/`pauseBlock`) e parte
+aguardavel (`finishStart`/`cancelNotifications`). Pela interface o `Task { }` segue valendo.
+
+### Item 1 da 4b: App Intents / Atalhos (PRD 17.2) - FEITO
+Tres intents (iniciar foco, pausar, concluir tarefa) + `LessShortcuts`. Tipo `nonisolated`
+com `perform()` `@MainActor` - unica forma que compila sob strict concurrency;
+`appShortcuts` e `var` computed, como `let` o tipo opaco nao satisfaz o protocolo. Frases de
+gatilho num **`AppShortcuts.xcstrings` separado** (o extractor usa tabela propria; no
+`Localizable.xcstrings` nao seriam achadas). Erros conformam
+`CustomLocalizedStringResourceConvertible`, entao a Siri fala a frase certa.
+**Instalado e rodando no iPhone do Joao.** Sumiu tambem o warning
+"No AppIntents.framework dependency found" que poluia todo build desde a Fase 0.
+
+**97 testes em 10 suites**, zero warning de concorrencia (eram 65 no inicio da sessao).
+
+### Bug de corrida corrigido no fim da sessao (CI pegou)
+O primeiro push dos intents deixou o **CI vermelho** e o teste local virou flaky. Causa real,
+nao do teste: `pauseFocus()` chamava `refresh()`, que **reagendava** notificacoes num
+`Task { }` solto - o mesmo defeito S7 num caminho que eu nao tinha convertido. Esse Task
+corria contra o `cancelNotifications()` do proprio intent: dependendo de quem ganhasse,
+**a transicao de um bloco PAUSADO continuava agendada** e o usuario receberia o aviso.
+Agora `reloadState(now:)` e a versao sincrona (devolve a ancora e nao reagenda nada) e as
+acoes de intent usam ela. Teste de regressao repete o cenario 15x por execucao, porque uma
+rodada so nao prova nada sobre defeito intermitente.
+
+### Armadilhas ja mapeadas para o item 2 (audio na interface)
+Do audit, para nao redescobrir na marra:
+- **`MPRemoteCommandCenter`**: o handler e sincrono e **nao isolado**. `MainActor.assumeIsolated`
+  - que o `AudioEngineService` usa hoje - **vai crashar aqui**: la e legitimo porque o observer
+  foi registrado com `queue: .main`; a media remote entrega em thread arbitraria. Padrao:
+  handler nao captura nada isolado, faz `Task { @MainActor in }` e retorna `.success`.
+  `MPRemoteCommandEvent` nao e `Sendable` - nao levar o evento para dentro do Task.
+- **`MPNowPlayingInfoCenter.nowPlayingInfo` e `[String: Any]?`** - `Any` nao e Sendable;
+  montar e escrever ficam na main actor.
+- **`isOutputMono` e computed** (`AudioEngineService.swift`) - uma View que o leia nunca
+  re-renderiza quando o fone sai. O aviso do PRD 5.7 precisa de estado publicado, atualizado
+  no `handleRouteChange` que ja existe, e so quando houver binaural ativo.
+- **Biblioteca precisa de `@Model` que nao existem** (`Mix`/`SoundPreset`) e o app **ja tem
+  dados em disco no iPhone** - mexer no `lessSchema()` exige pensar migracao.
+- **`AudioParameters.capped()` descarta a 5a camada em silencio** - a UI tem de avisar.
+- **Copy das frequencias**: so os rotulos da tabela do PRD 5.3, e o **disclaimer do 10.2 e
+  obrigatorio** na tela de detalhe do binaural.
+
 ## Proximo passo
 - ~~**Fase 2** - `PersistenceService`~~ **FEITA 2026-09-18** (26 testes).
 - ~~**Fase 3** - `NotificationService`~~ **FEITA 2026-09-18** (38 testes).
 - ~~**Fase 4a** - minimo usavel~~ **CONSTRUIDA 2026-09-18** (51 testes).
 - ~~**Fase 1** - motor de audio~~ **PRONTO 2026-09-19** (65 testes).
+- ~~**4b passo 0** - dono unico + efeitos aguardaveis~~ **FEITO 2026-09-19** (82 testes).
+- ~~**4b item 1** - App Intents / Atalhos~~ **FEITO 2026-09-19** (95 testes).
+- **AGORA: 4b item 2 - ligar o audio na interface.** O motor existe e e testado, mas nenhuma
+  tela o aciona. Ver as armadilhas ja mapeadas acima antes de comecar.
 - ~~instalar no iPhone~~ **FEITO 2026-09-19** - app rodando no aparelho.
 - **AGORA E COM O JOAO: usar o app no proprio dia.** E o unico jeito de saber se as regras
   que ele inventou (teto de 3, rolagem que ocupa vaga) funcionam na pratica - e se a

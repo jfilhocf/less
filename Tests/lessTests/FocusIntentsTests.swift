@@ -189,4 +189,42 @@ struct FocusIntentsTests {
         #expect(active?.id == store.activeTask?.id)
         #expect(active?.startedAt != nil)
     }
+
+    // MARK: Regressao - a corrida que deixava notificacao de bloco pausado
+
+    @Test("pausar nao pode reagendar por baixo do proprio cancelamento")
+    func pauseNeverLeavesScheduledNotifications() async throws {
+        // Repetido no corpo (e nao por trait) porque era corrida: passava na maioria das
+        // execucoes. Uma rodada so nao prova nada sobre um defeito intermitente.
+        for _ in 1...15 {
+            let (store, center) = try installRuntime()
+            store.refresh(now: now)
+            store.addTask(title: "corrida", now: now)
+            _ = try await StartFocusIntent().perform()
+
+            _ = try await PauseFocusIntent().perform()
+
+            #expect(await center.pendingIdentifiers().isEmpty)
+            #expect(store.isRunning == false)
+        }
+    }
+
+    @Test("pausar pela interface tambem nao deixa notificacao para tras")
+    func pauseFromUIAlsoClears() async throws {
+        let (store, center) = try installRuntime()
+        store.refresh(now: now)
+        store.addTask(title: "pela tela", now: now)
+
+        try store.startBlock(store.tasks[0], now: now)
+        await store.finishStart(now: now, askPermission: false)
+
+        store.pauseBlock(now: now.addingTimeInterval(60))
+        await store.cancelNotifications()
+
+        // O intent chamava refresh(), que reagendava num Task solto. Dependendo de quem
+        // ganhasse a corrida, a transicao de um bloco PAUSADO continuava agendada e o
+        // usuario receberia o aviso. Repetido porque era flaky: passava na maioria das vezes.
+        #expect(await center.pendingIdentifiers().isEmpty)
+        #expect(store.isRunning == false)
+    }
 }
