@@ -303,12 +303,44 @@ funcionar**. ATENCAO: o diagnostico apontou que o tutorial dentro do app
 (`grayscale.step.3`, caminho pela Central de Controle) pode estar errado - **verificar e
 corrigir o texto**.
 
+### RESOLVIDO no fim da sessao (commit 76bb686) - o diagnostico achou a causa real
+
+O Atalho ainda falhava depois do bloco livre, e o diagnostico de 4 agentes (que
+verificou no runtime do iOS 26.5: plists, strings pt-BR, desmontagem do UIKitCore)
+achou tres defeitos, nao um:
+
+1. **A ancora do bloco NUNCA EXPIRAVA.** `activeTask()`/`activeFreeBlock()` filtram por
+   `startedAt != nil`, sem data. Basta iniciar um bloco e nao encerrar: no dia seguinte
+   - e em todos depois - `startNextPendingTask` lanca `.alreadyFocusing` e o Atalho morre
+   na acao 3, com sintoma IDENTICO ao de "nao abriu o app". **O aparelho do Joao ja tinha
+   uma ancora de 8h56 viva.** Agora ancora de outro dia e descartada, sem gravar sessao.
+2. **`alarmsAuthorized` era estado de INSTANCIA.** So virava true em
+   `requestNotificationPermission()`, que o caminho do Atalho pula. Processo novo = flag
+   false: **o unico caminho que liga o Modo Foco era o unico que perdia o AlarmKit** e
+   caia na notificacao comum, que o Foco silencia. Agora consulta o sistema.
+3. **O tutorial do grayscale que EU escrevi estava errado.** `grayscale.step.3` mandava
+   escolher o filtro pressionando o controle da Central de Controle - **esse seletor nao
+   existe**, o controle e liga/desliga puro. Seguindo o proprio app, o filtro nunca era
+   escolhido. Tambem: a Apple pt-BR chama de **"Tons de Cinza"**, nao "Escala de Cinza",
+   e a intensidade padrao e 0.5 (dessaturado, nao preto-e-branco). Refeito em 6 passos
+   pelos Ajustes, com nomes extraidos do runtime.
+
+**E o app agora DETECTA:** `UIAccessibility.isGrayscaleEnabled` e especifico de grayscale
+(confirmado no binario do UIKit: chama `_AXSGrayscaleEnabled`, nao
+`_AXSDisplayFilterColorEnabled`). Ajustes avisa quando o filtro esta ligado mas nao e
+preto-e-branco.
+
 ### PENDENTE - primeira coisa da proxima sessao
-**O Joao relatou que o Atalho ainda falha** ("tudo deu certo exceto o atalho"), mesmo
-depois do bloco livre (commit 49017dc). O filtro de cor agora executa. **Falta descobrir
-o que ainda quebra** - perguntar a ele o sintoma exato: o app abre? o bloco inicia? o
-Foco liga? E conferir a ordem das 4 acoes no atalho dele (ele havia criado 4 atalhos
-separados em vez de 1 com 4 acoes; pode ter sobrado algo).
+- **Instalar o commit 76bb686 no iPhone** - o Joao desconectou antes de dar tempo. Build
+  ja compilado e assinado; e so conectar e rodar o comando do MAC-HANDOFF 3.5.
+- **Testar o Atalho de novo** depois disso.
+- Ainda nao aplicado do diagnostico (deliberadamente, para nao misturar naturezas de
+  correcao): `openAppWhenRun` esta **deprecado no iOS 26** - o substituto e
+  `supportedModes: IntentModes` com `.foreground(.deferred)` + `continueInForeground()`,
+  que faz o proprio intent trazer o app para a frente e torna a acao 4 do Atalho
+  redundante. **Fazer so depois que 76bb686 estiver testado no aparelho.**
+- Trocar `fatalError`/`preconditionFailure` do `lessApp` e do `FocusRuntime` por erro
+  observavel: num launch em background eles aparecem como "a acao falhou", sem mensagem.
 
 ## Proximo passo
 - ~~**Fase 2** - `PersistenceService`~~ **FEITA 2026-09-18** (26 testes).
