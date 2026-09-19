@@ -30,6 +30,9 @@ struct StartFocusIntent: AppIntent {
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
         let store = FocusRuntime.store
+        // Sem tarefa pendente inicia um bloco LIVRE em vez de lancar erro: erro aqui
+        // abortaria o Atalho inteiro e as acoes seguintes (preto-e-branco, abrir o app)
+        // nunca rodariam. E o timer nao depende da lista de tarefas.
         let title = try store.startNextPendingTask()
 
         // AGUARDA o agendamento. Um `Task { }` solto aqui nao rodaria: `perform()` retorna e
@@ -37,7 +40,10 @@ struct StartFocusIntent: AppIntent {
         // Sem prompt de permissao: em background nao ha como mostrar dialogo.
         await store.finishStart(askPermission: false)
 
-        return .result(dialog: IntentDialog("intent.start.done \(title)"))
+        if let title {
+            return .result(dialog: IntentDialog("intent.start.done \(title)"))
+        }
+        return .result(dialog: IntentDialog("intent.start.done.free"))
     }
 }
 

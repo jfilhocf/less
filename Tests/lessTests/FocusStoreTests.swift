@@ -374,4 +374,71 @@ struct FocusStoreTests {
         #expect(store.isFocusing == false)
         #expect(store.tasks.isEmpty)
     }
+
+    // MARK: Foco livre - o timer nao depende da lista de tarefas
+
+    @Test("da para focar sem tarefa nenhuma")
+    func freeFocusWorksWithoutTasks() throws {
+        let (store, _) = makeStore(container: try .lessInMemory())
+        store.refresh(now: now)
+        #expect(store.tasks.isEmpty)
+
+        try store.startFreeBlock(preset: .short, now: now)
+
+        #expect(store.isFocusing)
+        #expect(store.isFreeBlock)
+        #expect(store.activeTask == nil)
+        #expect(store.remaining == 25 * 60)
+    }
+
+    @Test("bloco livre sobrevive ao app morrer, igual ao bloco com tarefa")
+    func freeBlockSurvivesRelaunch() throws {
+        let container = try ModelContainer.lessInMemory()
+        let (first, _) = makeStore(container: container)
+        first.refresh(now: now)
+        try first.startFreeBlock(preset: .short, now: now)
+
+        // app morto e reaberto 10 min depois
+        let (second, _) = makeStore(container: container)
+        second.refresh(now: now.addingTimeInterval(600))
+
+        #expect(second.isFocusing)
+        #expect(second.isFreeBlock)
+        #expect(second.remaining == 15 * 60)
+    }
+
+    @Test("encerrar bloco livre grava sessao sem tarefa associada")
+    func freeBlockRecordsSessionWithoutTask() throws {
+        let container = try ModelContainer.lessInMemory()
+        let (store, _) = makeStore(container: container)
+        store.refresh(now: now)
+        try store.startFreeBlock(preset: .short, now: now)
+
+        store.stop(now: now.addingTimeInterval(10 * 60))
+
+        #expect(store.isFocusing == false)
+        #expect(store.isFreeBlock == false)
+
+        let persistence = SwiftDataPersistenceService(container: container)
+        let sessions = try persistence.sessions(
+            from: now.addingTimeInterval(-60), to: now.addingTimeInterval(3600)
+        )
+        #expect(sessions.count == 1)
+        #expect(sessions.first?.taskID == nil)
+        #expect(sessions.first?.effectiveSeconds == 10 * 60)
+    }
+
+    @Test("iniciar tarefa encerra o bloco livre - um de cada vez")
+    func startingTaskEndsFreeBlock() throws {
+        let (store, _) = makeStore(container: try .lessInMemory())
+        store.refresh(now: now)
+        store.addTask(title: "com tarefa", now: now)
+        try store.startFreeBlock(preset: .short, now: now)
+        #expect(store.isFreeBlock)
+
+        try store.startBlock(store.tasks[0], now: now)
+
+        #expect(store.isFreeBlock == false)
+        #expect(store.activeTask?.title == "com tarefa")
+    }
 }

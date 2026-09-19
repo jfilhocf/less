@@ -15,6 +15,11 @@ final class AppSettings {
     var appearance: String
     /// Preset de Pomodoro escolhido por padrao ao criar tarefa (rawValue de `PomodoroPreset`).
     var defaultPresetRaw: String
+    /// Ancora de um bloco de foco SEM tarefa (nil = nenhum). O Pomodoro roda sozinho: a
+    /// pessoa pode so querer o timer, sem lista de tarefas envolvida.
+    var freeBlockStartedAt: Date?
+    /// Preset do bloco livre em andamento.
+    var freeBlockPresetRaw: String?
 
     init(
         id: UUID = UUID(),
@@ -32,6 +37,14 @@ final class AppSettings {
         self.sleepTimerMinutes = sleepTimerMinutes
         self.appearance = appearance
         self.defaultPresetRaw = defaultPreset.rawValue
+        self.freeBlockStartedAt = nil
+        self.freeBlockPresetRaw = nil
+    }
+
+    /// Preset do bloco livre, se houver um em andamento.
+    var freeBlockPreset: PomodoroPreset? {
+        guard let raw = freeBlockPresetRaw else { return nil }
+        return PomodoroPreset(rawValue: raw)
     }
 
     var defaultPreset: PomodoroPreset {

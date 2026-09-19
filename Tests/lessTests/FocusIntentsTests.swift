@@ -71,14 +71,56 @@ struct FocusIntentsTests {
         #expect(await center.authorizationCalls == 0)
     }
 
-    @Test("sem tarefa pendente, o intent recusa com erro proprio")
-    func startIntentWithoutTaskFails() async throws {
+    @Test("sem tarefa pendente o intent NAO falha - inicia foco livre")
+    func startIntentWithoutTaskStartsFreeBlock() async throws {
         let (store, _) = try installRuntime()
         store.refresh(now: now)
+        #expect(store.tasks.isEmpty)
 
-        await #expect(throws: FocusStore.ActionError.noPendingTask) {
-            _ = try await StartFocusIntent().perform()
-        }
+        // Antes isto lancava .noPendingTask. Erro em AppIntent ABORTA o Atalho inteiro:
+        // as acoes seguintes (ligar preto-e-branco, abrir o app) nunca rodavam. E o
+        // Pomodoro nao depende da lista - da para so querer o timer.
+        _ = try await StartFocusIntent().perform()
+
+        #expect(store.isFocusing)
+        #expect(store.isFreeBlock)
+        #expect(store.activeTask == nil)
+        #expect(store.phase == .focus)
+    }
+
+    @Test("com todas as tarefas concluidas, tambem inicia foco livre")
+    func startIntentWithAllTasksDoneStartsFree() async throws {
+        let (store, _) = try installRuntime()
+        store.refresh(now: now)
+        store.addTask(title: "ja feita", now: now)
+        store.complete(store.tasks[0], now: now)
+
+        _ = try await StartFocusIntent().perform()
+
+        #expect(store.isFreeBlock)
+        #expect(store.isFocusing)
+    }
+
+    @Test("foco livre tambem agenda o aviso de transicao")
+    func freeBlockSchedulesNotification() async throws {
+        let (store, center) = try installRuntime()
+        store.refresh(now: now)
+
+        _ = try await StartFocusIntent().perform()
+
+        #expect(await center.pendingIdentifiers().isEmpty == false)
+    }
+
+    @Test("pausar funciona no foco livre")
+    func pauseWorksOnFreeBlock() async throws {
+        let (store, _) = try installRuntime()
+        store.refresh(now: now)
+        _ = try await StartFocusIntent().perform()
+
+        _ = try await PauseFocusIntent().perform()
+
+        #expect(store.isRunning == false)
+        #expect(store.isFocusing)
     }
 
     @Test("com bloco ja rodando, iniciar de novo recusa em vez de reiniciar")

@@ -60,6 +60,15 @@ protocol PersistenceService: Sendable {
     /// A tarefa com Pomodoro ancorado, se houver. So pode haver uma.
     func activeTask() throws -> FocusTask?
 
+    /// Ancora um bloco de foco SEM tarefa. O timer existe por si so.
+    func startFreeBlock(preset: PomodoroPreset, at now: Date) throws
+
+    /// Desancora o bloco livre.
+    func stopFreeBlock() throws
+
+    /// O bloco livre em andamento, se houver.
+    func activeFreeBlock() throws -> (startedAt: Date, preset: PomodoroPreset)?
+
     // MARK: Ajustes (singleton)
 
     /// Ajustes globais, criados com os defaults no primeiro acesso.
@@ -197,6 +206,33 @@ final class SwiftDataPersistenceService: PersistenceService {
         try context.fetch(
             FetchDescriptor<FocusTask>(predicate: #Predicate { $0.startedAt != nil })
         ).first
+    }
+
+    func startFreeBlock(preset: PomodoroPreset, at now: Date) throws {
+        // Bloco livre e bloco de tarefa sao exclusivos: iniciar um encerra o outro.
+        for task in try context.fetch(
+            FetchDescriptor<FocusTask>(predicate: #Predicate { $0.startedAt != nil })
+        ) {
+            task.startedAt = nil
+        }
+        let settings = try settings()
+        settings.freeBlockStartedAt = now
+        settings.freeBlockPresetRaw = preset.rawValue
+        try context.save()
+    }
+
+    func stopFreeBlock() throws {
+        let settings = try settings()
+        settings.freeBlockStartedAt = nil
+        settings.freeBlockPresetRaw = nil
+        try context.save()
+    }
+
+    func activeFreeBlock() throws -> (startedAt: Date, preset: PomodoroPreset)? {
+        let settings = try settings()
+        guard let startedAt = settings.freeBlockStartedAt,
+              let preset = settings.freeBlockPreset else { return nil }
+        return (startedAt, preset)
     }
 
     // MARK: Ajustes

@@ -103,6 +103,23 @@
         }
       }
     },
+    "focus.free": {
+      "comment": "Titulo na tela de foco quando nao ha tarefa",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Free focus"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Foco livre"
+          }
+        }
+      }
+    },
     "focus.pause": {
       "comment": "Botao: pausar o Pomodoro",
       "localizations": {
@@ -473,6 +490,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Focando em %@."
+          }
+        }
+      }
+    },
+    "intent.start.done.free": {
+      "comment": "Resposta da Siri ao iniciar sem tarefa",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Focus started."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Foco iniciado."
           }
         }
       }
@@ -915,6 +949,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nenhuma tarefa ainda."
+          }
+        }
+      }
+    },
+    "today.freeFocus": {
+      "comment": "Botao: inicia o timer sozinho",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Focus without a task"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Focar sem tarefa"
           }
         }
       }

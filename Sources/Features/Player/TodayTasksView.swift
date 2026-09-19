@@ -132,6 +132,15 @@ struct TodayTasksView: View {
                     .foregroundStyle(.tertiary)
             }
 
+            // O timer nao depende da lista: da para focar sem tarefa nenhuma.
+            Button {
+                store.startFreeFocus()
+            } label: {
+                Label("today.freeFocus", systemImage: "timer")
+                    .font(.subheadline)
+            }
+            .padding(.top, 4)
+
             if let message = store.errorMessage {
                 Text(message)
                     .font(.footnote)

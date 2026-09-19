@@ -9,12 +9,10 @@ struct FocusSessionView: View {
         VStack(spacing: 32) {
             Spacer()
 
-            if let task = store.activeTask {
-                Text(task.title)
-                    .font(.headline.weight(.regular))
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-            }
+            Text(store.activeTask?.title ?? String(localized: "focus.free"))
+                .font(.headline.weight(.regular))
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
 
             Text(Self.clock(store.remaining))
                 .font(.system(size: 76, weight: .thin, design: .rounded))

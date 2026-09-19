@@ -25,7 +25,11 @@ final class FocusStore {
     var remaining: TimeInterval { timer.remaining }
     var isRunning: Bool { timer.isRunning }
     var completedFocusBlocks: Int { timer.completedFocusBlocks }
-    var isFocusing: Bool { activeTask != nil }
+    /// Ha bloco rodando - **com ou sem tarefa**. O timer existe por si so: a pessoa pode
+    /// so querer 25 minutos de foco, sem lista de tarefas envolvida.
+    var isFocusing: Bool { activeTask != nil || isFreeBlock }
+    /// Bloco de foco sem tarefa associada.
+    private(set) var isFreeBlock = false
 
     /// Derivado da lista ja carregada, pela mesma regra pura que o servico usa ao gravar.
     /// Sem ida ao disco e sempre coerente com o que esta na tela.
@@ -89,18 +93,32 @@ final class FocusStore {
         rolledOverCount = try persistence.rollOverPendingTasks(now: now)
         try reload(now: now)
 
-        guard let running = try persistence.activeTask(), let anchor = running.startedAt else {
-            activeTask = nil
-            stopTicking()
+        if let running = try persistence.activeTask(), let anchor = running.startedAt {
+            activeTask = running
+            isFreeBlock = false
+            timer.start(preset: running.preset, at: anchor)
+            timer.reconcile(now: now)
+            startTicking()
             errorMessage = nil
-            return nil
+            return anchor
         }
-        activeTask = running
-        timer.start(preset: running.preset, at: anchor)
-        timer.reconcile(now: now)
-        startTicking()
+
+        // Sem tarefa ancorada, ainda pode haver um bloco LIVRE em andamento.
+        if let free = try persistence.activeFreeBlock() {
+            activeTask = nil
+            isFreeBlock = true
+            timer.start(preset: free.preset, at: free.startedAt)
+            timer.reconcile(now: now)
+            startTicking()
+            errorMessage = nil
+            return free.startedAt
+        }
+
+        activeTask = nil
+        isFreeBlock = false
+        stopTicking()
         errorMessage = nil
-        return anchor
+        return nil
     }
 
     // MARK: Tarefas
@@ -174,8 +192,29 @@ final class FocusStore {
     func startBlock(_ task: FocusTask, now: Date = .now) throws {
         try persistence.startPomodoro(on: task, at: now)
         activeTask = task
+        isFreeBlock = false
         timer.start(preset: task.preset, at: now)
         startTicking()
+    }
+
+    /// Inicia um bloco de foco **sem tarefa**. O Pomodoro nao depende da lista.
+    func startFreeBlock(preset: PomodoroPreset? = nil, now: Date = .now) throws {
+        let chosen = try preset ?? persistence.settings().defaultPreset
+        try persistence.startFreeBlock(preset: chosen, at: now)
+        activeTask = nil
+        isFreeBlock = true
+        timer.start(preset: chosen, at: now)
+        startTicking()
+    }
+
+    /// Versao para a interface: inicia bloco livre e trata erro em `errorMessage`.
+    func startFreeFocus(preset: PomodoroPreset? = nil, now: Date = .now) {
+        do {
+            try startFreeBlock(preset: preset, now: now)
+            Task { await self.finishStart(now: now) }
+        } catch {
+            errorMessage = String(localized: "error.save")
+        }
     }
 
     /// Parte ASSINCRONA de iniciar: permissao e agendamento das notificacoes.
@@ -224,6 +263,11 @@ final class FocusStore {
 
     /// Encerra o bloco e registra a sessao para as estatisticas (derivadas, PRD 12.12).
     func stop(now: Date = .now) {
+        // Bloco livre: nao ha tarefa, mas a sessao conta para a estatistica do mesmo jeito.
+        if isFreeBlock {
+            stopFreeBlock(now: now)
+            return
+        }
         guard let task = activeTask else { return }
         let anchor = task.startedAt ?? now
         timer.reconcile(now: now)
@@ -278,27 +322,40 @@ final class FocusStore {
     ///
     /// Sincrona de proposito: o efeito assincrono (notificacoes) fica em `finishStart`, que
     /// o intent AGUARDA antes de retornar - senao o processo pode ser suspenso no meio.
+    /// Inicia o foco pela via do Atalho/Siri.
+    ///
+    /// **Sem tarefa pendente, inicia um bloco LIVRE em vez de falhar.** Lancar erro aqui
+    /// matava o Atalho inteiro: as acoes seguintes (ligar preto-e-branco, abrir o app) nunca
+    /// rodavam. E, mais importante, o Pomodoro nao depende da lista - a pessoa pode so querer
+    /// o timer.
     @discardableResult
-    func startNextPendingTask(now: Date = .now) throws -> String {
+    func startNextPendingTask(now: Date = .now) throws -> String? {
         // versao sincrona: reagendar aqui correria contra o cancelamento do proprio intent
         _ = try? reloadState(now: now)
-        guard activeTask == nil else { throw ActionError.alreadyFocusing }
-        guard let next = tasks.first(where: { !$0.isCompleted }) else {
-            throw ActionError.noPendingTask
+        guard !isFocusing else { throw ActionError.alreadyFocusing }
+
+        if let next = tasks.first(where: { !$0.isCompleted }) {
+            do {
+                try startBlock(next, now: now)
+            } catch {
+                throw ActionError.couldNotSave
+            }
+            return next.title
         }
+
         do {
-            try startBlock(next, now: now)
+            try startFreeBlock(now: now)
         } catch {
             throw ActionError.couldNotSave
         }
-        return next.title
+        return nil
     }
 
     /// Pausa o bloco em andamento.
     func pauseFocus(now: Date = .now) throws {
         // versao sincrona: reagendar aqui correria contra o cancelamento do proprio intent
         _ = try? reloadState(now: now)
-        guard activeTask != nil, isRunning else { throw ActionError.notFocusing }
+        guard isFocusing, isRunning else { throw ActionError.notFocusing }
         pauseBlock(now: now)
     }
 
@@ -307,11 +364,37 @@ final class FocusStore {
     func completeActiveTask(now: Date = .now) throws -> String {
         // versao sincrona: reagendar aqui correria contra o cancelamento do proprio intent
         _ = try? reloadState(now: now)
+        // Bloco livre nao tem tarefa a concluir - encerra o bloco.
+        if isFreeBlock { stop(now: now); throw ActionError.notFocusing }
         guard let task = activeTask else { throw ActionError.notFocusing }
         let title = task.title
         complete(task, now: now)
         if errorMessage != nil { throw ActionError.couldNotSave }
         return title
+    }
+
+    private func stopFreeBlock(now: Date) {
+        timer.reconcile(now: now)
+        let preset = (try? persistence.settings().defaultPreset) ?? .short
+        let anchor = (try? persistence.activeFreeBlock())?.startedAt ?? now
+        let focused = PomodoroEngine(preset: preset).focusedSeconds(elapsed: timer.elapsed)
+        do {
+            try persistence.recordSession(
+                taskID: nil,
+                startedAt: anchor,
+                endedAt: now,
+                effectiveSeconds: Int(focused),
+                completedCycles: timer.completedFocusBlocks,
+                wasInterrupted: timer.phase == .focus
+            )
+            try persistence.stopFreeBlock()
+        } catch {
+            errorMessage = String(localized: "error.save")
+        }
+        isFreeBlock = false
+        timer.reset()
+        stopTicking()
+        Task { await self.cancelNotifications() }
     }
 
     /// Pede autorizacao do aviso de transicao, preferindo o alarme.
@@ -342,16 +425,27 @@ final class FocusStore {
     /// silencioso**; a notificacao comum e silenciada justamente pelo Foco que o usuario
     /// ligou para trabalhar. Sem autorizacao (ou em iOS < 26), cai na notificacao.
     private func rescheduleNotifications(from anchor: Date, now: Date) async {
-        guard let task = activeTask else { return }
-        let upcoming = PomodoroEngine(preset: task.preset)
+        // Bloco livre nao tem tarefa: o aviso sai sem titulo, mas sai.
+        let preset: PomodoroPreset
+        let title: String?
+        if let task = activeTask {
+            preset = task.preset
+            title = task.title
+        } else if isFreeBlock {
+            preset = (try? persistence.activeFreeBlock())?.preset ?? .short
+            title = nil
+        } else {
+            return
+        }
+        let upcoming = PomodoroEngine(preset: preset)
             .upcomingTransitions(start: anchor, now: now)
 
         if alarmsAuthorized {
             await notifications.cancelAll()
-            await alarms.schedule(upcoming, taskTitle: task.title, now: now)
+            await alarms.schedule(upcoming, taskTitle: title, now: now)
         } else {
             await alarms.cancelAll()
-            await notifications.rescheduleTransitions(upcoming, taskTitle: task.title, now: now)
+            await notifications.rescheduleTransitions(upcoming, taskTitle: title, now: now)
         }
     }
 
