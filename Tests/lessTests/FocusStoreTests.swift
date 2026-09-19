@@ -296,4 +296,79 @@ struct FocusStoreTests {
         // so os 10 min que rodaram de fato
         #expect(sessions.first?.effectiveSeconds == 10 * 60)
     }
+
+    // MARK: Desmarcar e apagar - reportado em uso real
+
+    @Test("concluir por engano tem volta: desmarcar devolve a tarefa para pendente")
+    func uncompleteRevertsTask() throws {
+        let (store, _) = makeStore(container: try .lessInMemory())
+        store.refresh(now: now)
+        store.addTask(title: "marquei sem querer", now: now)
+
+        store.complete(store.tasks[0], now: now)
+        #expect(store.tasks[0].isCompleted == true)
+
+        store.uncomplete(store.tasks[0], now: now)
+        #expect(store.tasks[0].isCompleted == false)
+        #expect(store.tasks[0].completedAt == nil)
+    }
+
+    @Test("o toque no circulo alterna nos dois sentidos")
+    func toggleGoesBothWays() throws {
+        let (store, _) = makeStore(container: try .lessInMemory())
+        store.refresh(now: now)
+        store.addTask(title: "vai e volta", now: now)
+
+        store.toggleCompletion(store.tasks[0], now: now)
+        #expect(store.tasks[0].isCompleted == true)
+
+        store.toggleCompletion(store.tasks[0], now: now)
+        #expect(store.tasks[0].isCompleted == false)
+
+        store.toggleCompletion(store.tasks[0], now: now)
+        #expect(store.tasks[0].isCompleted == true)
+    }
+
+    @Test("desmarcada volta a poder iniciar um bloco")
+    func uncompletedTaskCanStartAgain() throws {
+        let (store, _) = makeStore(container: try .lessInMemory())
+        store.refresh(now: now)
+        store.addTask(title: "retomar", now: now)
+        store.complete(store.tasks[0], now: now)
+
+        store.uncomplete(store.tasks[0], now: now)
+        store.start(store.tasks[0], now: now)
+
+        #expect(store.isFocusing)
+        #expect(store.activeTask?.title == "retomar")
+    }
+
+    @Test("apagar remove a tarefa e libera a vaga do dia")
+    func deleteFreesSlot() throws {
+        let (store, _) = makeStore(container: try .lessInMemory())
+        store.refresh(now: now)
+        for i in 1...3 { store.addTask(title: "t\(i)", now: now) }
+        #expect(store.canCreate == false)
+
+        store.delete(store.tasks[0], now: now)
+
+        #expect(store.tasks.count == 2)
+        // apagar e correcao de engano ("essa tarefa nao existe"), diferente de concluir -
+        // por isso devolve a vaga. Concluir continua NAO devolvendo.
+        #expect(store.canCreate == true)
+    }
+
+    @Test("apagar a tarefa em foco encerra o bloco junto")
+    func deletingActiveTaskStopsBlock() throws {
+        let (store, _) = makeStore(container: try .lessInMemory())
+        store.refresh(now: now)
+        store.addTask(title: "em foco", now: now)
+        store.start(store.tasks[0], now: now)
+        #expect(store.isFocusing)
+
+        store.delete(store.tasks[0], now: now)
+
+        #expect(store.isFocusing == false)
+        #expect(store.tasks.isEmpty)
+    }
 }

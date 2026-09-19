@@ -19,7 +19,8 @@ struct TodayTasksView: View {
                         TaskRow(
                             task: task,
                             onStart: { store.start(task) },
-                            onComplete: { store.complete(task) }
+                            onToggle: { store.toggleCompletion(task) },
+                            onDelete: { store.delete(task) }
                         )
                     }
                 }
@@ -92,21 +93,27 @@ struct TodayTasksView: View {
     }
 }
 
-/// Uma tarefa da lista. Toque no circulo conclui; toque no texto inicia o Pomodoro.
+/// Uma tarefa da lista.
+///
+/// - toque no circulo **alterna** concluida/pendente - concluir por engano tem volta;
+/// - toque no texto inicia o Pomodoro;
+/// - toque longo abre o menu para apagar.
 private struct TaskRow: View {
     let task: FocusTask
     let onStart: () -> Void
-    let onComplete: () -> Void
+    let onToggle: () -> Void
+    let onDelete: () -> Void
 
     var body: some View {
         HStack(spacing: 14) {
-            Button(action: onComplete) {
+            Button(action: onToggle) {
                 Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
                     .font(.title3)
                     .foregroundStyle(task.isCompleted ? Color.accentColor : .secondary)
+                    .contentTransition(.symbolEffect(.replace))
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(Text("task.complete"))
+            .accessibilityLabel(Text(task.isCompleted ? "task.uncomplete" : "task.complete"))
 
             Button(action: onStart) {
                 VStack(alignment: .leading, spacing: 2) {
@@ -123,6 +130,18 @@ private struct TaskRow: View {
             }
             .buttonStyle(.plain)
             .disabled(task.isCompleted)
+        }
+        .animation(.default, value: task.isCompleted)
+        .contextMenu {
+            Button(action: onToggle) {
+                Label(
+                    task.isCompleted ? "task.uncomplete" : "task.complete",
+                    systemImage: task.isCompleted ? "arrow.uturn.backward" : "checkmark"
+                )
+            }
+            Button(role: .destructive, action: onDelete) {
+                Label("task.delete", systemImage: "trash")
+            }
         }
     }
 }

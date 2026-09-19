@@ -37,6 +37,9 @@ protocol PersistenceService: Sendable {
     /// Marca como concluida. NAO libera a vaga do dia - as 3 sao o compromisso do dia.
     func complete(_ task: FocusTask, at now: Date) throws
 
+    /// Desmarca uma tarefa concluida. Concluir por engano tem que ter volta.
+    func uncomplete(_ task: FocusTask) throws
+
     /// Rola para hoje toda tarefa pendente de dias anteriores e devolve quantas rolaram.
     /// Cada rolada OCUPA vaga de hoje; se houver mais de 3 acumuladas, todas rolam e a
     /// criacao fica bloqueada ate o usuario zerar o atraso (disciplina do adendo 16.1).
@@ -138,6 +141,12 @@ final class SwiftDataPersistenceService: PersistenceService {
     func complete(_ task: FocusTask, at now: Date = Date()) throws {
         task.isCompleted = true
         task.completedAt = now
+        try context.save()
+    }
+
+    func uncomplete(_ task: FocusTask) throws {
+        task.isCompleted = false
+        task.completedAt = nil
         try context.save()
     }
 

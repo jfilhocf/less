@@ -511,6 +511,40 @@
         }
       }
     },
+    "task.delete": {
+      "comment": "Acao: apagar a tarefa",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apagar"
+          }
+        }
+      }
+    },
+    "task.uncomplete": {
+      "comment": "Acao: voltar tarefa para pendente",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mark as not done"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desmarcar"
+          }
+        }
+      }
+    },
     "today.add": {
       "comment": "Rotulo acessivel do botao de adicionar",
       "localizations": {

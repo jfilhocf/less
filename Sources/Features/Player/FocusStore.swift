@@ -120,6 +120,25 @@ final class FocusStore {
         }
     }
 
+    /// Desmarca uma tarefa concluida.
+    func uncomplete(_ task: FocusTask, now: Date = .now) {
+        do {
+            try persistence.uncomplete(task)
+            try reload(now: now)
+        } catch {
+            errorMessage = String(localized: "error.save")
+        }
+    }
+
+    /// Alterna concluida/pendente - o que o toque no circulo faz.
+    func toggleCompletion(_ task: FocusTask, now: Date = .now) {
+        if task.isCompleted {
+            uncomplete(task, now: now)
+        } else {
+            complete(task, now: now)
+        }
+    }
+
     func delete(_ task: FocusTask, now: Date = .now) {
         do {
             if activeTask?.id == task.id { stop(now: now) }
