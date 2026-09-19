@@ -19,6 +19,9 @@ import AlarmKit
 protocol AlarmScheduling: Sendable {
     /// `false` quando o usuario nega ou o recurso nao existe nesta versao do iOS.
     func requestAuthorization() async -> Bool
+    /// CONSULTA o estado, sem pedir nada. Funciona em background - onde nao ha como mostrar
+    /// dialogo - e nao gasta a unica chance de perguntar.
+    func isAuthorized() async -> Bool
     var isAvailable: Bool { get }
     /// Agenda um aviso por transicao. Substitui o que estiver agendado.
     func schedule(_ transitions: [PomodoroTransition], taskTitle: String?, now: Date) async
@@ -54,6 +57,10 @@ struct LessAlarmMetadata: AlarmMetadata {
 @available(iOS 26.0, *)
 final class LiveAlarmService: AlarmScheduling {
     var isAvailable: Bool { true }
+
+    func isAuthorized() async -> Bool {
+        AlarmManager.shared.authorizationState == .authorized
+    }
 
     func requestAuthorization() async -> Bool {
         let manager = AlarmManager.shared
@@ -131,6 +138,7 @@ final class LiveAlarmService: AlarmScheduling {
 struct UnavailableAlarmService: AlarmScheduling {
     var isAvailable: Bool { false }
     func requestAuthorization() async -> Bool { false }
+    func isAuthorized() async -> Bool { false }
     func schedule(_ transitions: [PomodoroTransition], taskTitle: String?, now: Date) async {}
     func cancelAll() async {}
 }

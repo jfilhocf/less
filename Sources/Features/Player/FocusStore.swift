@@ -44,9 +44,6 @@ final class FocusStore {
     private let alarms: any AlarmScheduling
     private let timer = LiveTimerService()
     private var ticker: Task<Void, Never>?
-    /// `true` depois que o usuario autorizou o alarme. Enquanto for falso, o aviso de
-    /// transicao sai por notificacao comum.
-    private var alarmsAuthorized = false
 
     init(
         persistence: any PersistenceService,
@@ -94,6 +91,17 @@ final class FocusStore {
         try reload(now: now)
 
         if let running = try persistence.activeTask(), let anchor = running.startedAt {
+            // Ancora de outro dia = bloco que ninguem encerrou, nao bloco em andamento.
+            // Sem isto, um bloco esquecido ontem faz TODO Atalho de hoje morrer em
+            // `.alreadyFocusing` - com sintoma identico ao de "nao abriu o app".
+            guard Self.isSameDay(anchor, now) else {
+                try persistence.stopPomodoro(on: running)
+                activeTask = nil
+                isFreeBlock = false
+                stopTicking()
+                errorMessage = nil
+                return nil
+            }
             activeTask = running
             isFreeBlock = false
             timer.start(preset: running.preset, at: anchor)
@@ -105,6 +113,14 @@ final class FocusStore {
 
         // Sem tarefa ancorada, ainda pode haver um bloco LIVRE em andamento.
         if let free = try persistence.activeFreeBlock() {
+            guard Self.isSameDay(free.startedAt, now) else {
+                try persistence.stopFreeBlock()
+                activeTask = nil
+                isFreeBlock = false
+                stopTicking()
+                errorMessage = nil
+                return nil
+            }
             activeTask = nil
             isFreeBlock = true
             timer.start(preset: free.preset, at: free.startedAt)
@@ -331,8 +347,18 @@ final class FocusStore {
     @discardableResult
     func startNextPendingTask(now: Date = .now) throws -> String? {
         // versao sincrona: reagendar aqui correria contra o cancelamento do proprio intent
-        _ = try? reloadState(now: now)
-        guard !isFocusing else { throw ActionError.alreadyFocusing }
+        do {
+            _ = try reloadState(now: now)
+        } catch {
+            // Falha de disco nao pode se disfarcar de "dia vazio" - e o unico erro que
+            // ainda deve parar o Atalho.
+            throw ActionError.couldNotSave
+        }
+
+        // Ja focando = o estado final que o Atalho pediu JA vale. Lancar aqui transformava
+        // sucesso em aborto do fluxo inteiro: o Atalhos nao tem "continuar em caso de erro",
+        // entao as acoes seguintes (preto-e-branco, Abrir App) morriam junto.
+        if isFocusing { return activeTask?.title }
 
         if let next = tasks.first(where: { !$0.isCompleted }) {
             do {
@@ -352,21 +378,36 @@ final class FocusStore {
     }
 
     /// Pausa o bloco em andamento.
-    func pauseFocus(now: Date = .now) throws {
-        // versao sincrona: reagendar aqui correria contra o cancelamento do proprio intent
-        _ = try? reloadState(now: now)
-        guard isFocusing, isRunning else { throw ActionError.notFocusing }
+    /// Pausa o bloco em andamento. `false` quando nao havia nada rodando.
+    ///
+    /// **Nao lanca**: "nada para pausar" nao e falha, e erro aqui abortaria o Atalho.
+    @discardableResult
+    func pauseFocus(now: Date = .now) throws -> Bool {
+        do {
+            _ = try reloadState(now: now)
+        } catch {
+            throw ActionError.couldNotSave
+        }
+        guard isFocusing, isRunning else { return false }
         pauseBlock(now: now)
+        return true
     }
 
     /// Conclui a tarefa em foco. Devolve o titulo concluido.
+    /// Conclui a tarefa em foco. `nil` quando nao havia tarefa - tambem nao lanca.
     @discardableResult
-    func completeActiveTask(now: Date = .now) throws -> String {
-        // versao sincrona: reagendar aqui correria contra o cancelamento do proprio intent
-        _ = try? reloadState(now: now)
-        // Bloco livre nao tem tarefa a concluir - encerra o bloco.
-        if isFreeBlock { stop(now: now); throw ActionError.notFocusing }
-        guard let task = activeTask else { throw ActionError.notFocusing }
+    func completeActiveTask(now: Date = .now) throws -> String? {
+        do {
+            _ = try reloadState(now: now)
+        } catch {
+            throw ActionError.couldNotSave
+        }
+        // Bloco livre nao tem tarefa a concluir - encerra o bloco e segue.
+        if isFreeBlock {
+            stop(now: now)
+            return nil
+        }
+        guard let task = activeTask else { return nil }
         let title = task.title
         complete(task, now: now)
         if errorMessage != nil { throw ActionError.couldNotSave }
@@ -403,14 +444,20 @@ final class FocusStore {
     /// bloco e o caminho mais curto para o usuario negar os dois.
     func requestNotificationPermission() async {
         if alarms.isAvailable, await alarms.requestAuthorization() {
-            alarmsAuthorized = true
             return
         }
-        alarmsAuthorized = false
         _ = await notifications.requestAuthorization()
     }
 
     // MARK: Interno
+
+    /// Ancora e "agora" caem no mesmo dia local?
+    ///
+    /// Ao expirar, a sessao e **descartada sem gravar**: registrar 9 horas de "foco" que
+    /// ninguem fez contaminaria a estatistica com numero inventado (guardrail 12.12).
+    private static func isSameDay(_ anchor: Date, _ now: Date) -> Bool {
+        DailyTaskRules.dayKey(for: anchor) == DailyTaskRules.dayKey(for: now)
+    }
 
     /// Recarrega a lista do dia e fixa qual dia ela representa.
     private func reload(now: Date) throws {
@@ -440,7 +487,11 @@ final class FocusStore {
         let upcoming = PomodoroEngine(preset: preset)
             .upcomingTransitions(start: anchor, now: now)
 
-        if alarmsAuthorized {
+        // CONSULTA o sistema, nao uma flag de instancia. A flag nascia `false` e so virava
+        // `true` em `requestNotificationPermission()` - que o caminho do Atalho PULA. Ou
+        // seja: o unico caminho que liga o Modo Foco era o unico que perdia o alarme e caia
+        // na notificacao comum, justamente a que o Foco silencia.
+        if await alarms.isAuthorized() {
             await notifications.cancelAll()
             await alarms.schedule(upcoming, taskTitle: title, now: now)
         } else {

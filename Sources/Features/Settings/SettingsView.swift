@@ -7,7 +7,13 @@ import SwiftUI
 /// audio.
 struct SettingsView: View {
     @Environment(\.openURL) private var openURL
+    @Environment(\.scenePhase) private var scenePhase
     @State private var showingManualSteps = false
+    /// `UIAccessibility.isGrayscaleEnabled` e especifico de **grayscale**, nao da chave
+    /// mestra de filtros de cor - confirmado no binario do UIKit, que chama
+    /// `_AXSGrayscaleEnabled` e nao `_AXSDisplayFilterColorEnabled`. Por isso da para
+    /// distinguir "ligou um filtro" de "ligou o preto-e-branco".
+    @State private var grayscaleOn = UIAccessibility.isGrayscaleEnabled
 
     var body: some View {
         NavigationStack {
@@ -20,6 +26,18 @@ struct SettingsView: View {
             }
             .navigationTitle("ajustes")
             .navigationBarTitleDisplayMode(.large)
+            // A leitura direta usa cache e pode vir velha ao voltar do atalho; a
+            // notificacao e a fonte confiavel.
+            .onReceive(
+                NotificationCenter.default.publisher(
+                    for: UIAccessibility.grayscaleStatusDidChangeNotification
+                )
+            ) { _ in
+                grayscaleOn = UIAccessibility.isGrayscaleEnabled
+            }
+            .onChange(of: scenePhase) { _, phase in
+                if phase == .active { grayscaleOn = UIAccessibility.isGrayscaleEnabled }
+            }
         }
     }
 
@@ -105,9 +123,29 @@ struct SettingsView: View {
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
+            if !grayscaleOn {
+                // Em vez de deixar a pessoa achar que o app esta quebrado quando a tela
+                // nao fica cinza, dizer o que de fato falta.
+                VStack(alignment: .leading, spacing: 8) {
+                    Label("grayscale.warning", systemImage: "exclamationmark.triangle")
+                        .font(.footnote)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Button("grayscale.openSettings") {
+                        if let url = URL(string: UIApplication.openSettingsURLString) {
+                            openURL(url)
+                        }
+                    }
+                    .font(.footnote)
+                }
+                .padding(12)
+                .background(.yellow.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+            }
+
             VStack(alignment: .leading, spacing: 8) {
-                // Caminho pela Central de Controle: menos toques que Ajustes > Acessibilidade.
-                ForEach(1...4, id: \.self) { step in
+                // Caminho pelos Ajustes. A versao anterior mandava escolher o filtro pela
+                // Central de Controle - e la o controle e liga/desliga puro, sem seletor.
+                // Seguindo aquele texto, o filtro nunca chegava a ser escolhido.
+                ForEach(1...6, id: \.self) { step in
                     HStack(alignment: .firstTextBaseline, spacing: 8) {
                         Text("\(step).")
                             .font(.caption.monospacedDigit())

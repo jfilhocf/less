@@ -123,16 +123,38 @@ struct FocusIntentsTests {
         #expect(store.isFocusing)
     }
 
-    @Test("com bloco ja rodando, iniciar de novo recusa em vez de reiniciar")
-    func startIntentTwiceFails() async throws {
+    @Test("com bloco ja rodando, iniciar de novo NAO falha e nao reinicia")
+    func startIntentTwiceIsIdempotent() async throws {
         let (store, _) = try installRuntime()
         store.refresh(now: now)
         store.addTask(title: "unica", now: now)
         _ = try await StartFocusIntent().perform()
+        let firstTask = store.activeTask?.id
 
-        await #expect(throws: FocusStore.ActionError.alreadyFocusing) {
-            _ = try await StartFocusIntent().perform()
-        }
+        // Antes lancava .alreadyFocusing - e erro em AppIntent aborta o Atalho inteiro,
+        // matando as acoes seguintes. "Ja esta como voce pediu" nao e falha.
+        _ = try await StartFocusIntent().perform()
+
+        #expect(store.isFocusing)
+        #expect(store.activeTask?.id == firstTask)
+    }
+
+    @Test("bloco esquecido de ONTEM nao trava o Atalho de hoje")
+    func staleAnchorDoesNotBlockToday() async throws {
+        let (store, _) = try installRuntime()
+        let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: now)!
+
+        store.refresh(now: yesterday)
+        store.addTask(title: "de ontem", now: yesterday)
+        try store.startBlock(store.tasks[0], now: yesterday)
+
+        // Hoje: a ancora de ontem e lixo, nao bloco em andamento. Sem expirar, TODO
+        // Atalho de hoje morreria em .alreadyFocusing - sintoma identico ao relatado.
+        _ = try store.startNextPendingTask(now: now)
+
+        #expect(store.isFocusing)
+        #expect(DailyTaskRules.dayKey(for: store.activeTask?.startedAt ?? now)
+                == DailyTaskRules.dayKey(for: now) || store.isFreeBlock)
     }
 
     @Test("tarefa concluida nao e escolhida para iniciar")
@@ -164,14 +186,14 @@ struct FocusIntentsTests {
         #expect(await center.pendingIdentifiers().isEmpty)
     }
 
-    @Test("pausar sem bloco em andamento recusa")
-    func pauseIntentWithoutBlockFails() async throws {
+    @Test("pausar sem bloco responde, em vez de abortar o Atalho")
+    func pauseIntentWithoutBlockAnswers() async throws {
         let (store, _) = try installRuntime()
         store.refresh(now: now)
 
-        await #expect(throws: FocusStore.ActionError.notFocusing) {
-            _ = try await PauseFocusIntent().perform()
-        }
+        // Nao lanca: erro aqui mataria as acoes seguintes do Atalho.
+        _ = try await PauseFocusIntent().perform()
+        #expect(store.isFocusing == false)
     }
 
     // MARK: Concluir
@@ -189,15 +211,14 @@ struct FocusIntentsTests {
         #expect(store.tasks.first?.isCompleted == true)
     }
 
-    @Test("concluir sem nada em foco recusa")
-    func completeIntentWithoutFocusFails() async throws {
+    @Test("concluir sem nada em foco responde, em vez de abortar o Atalho")
+    func completeIntentWithoutFocusAnswers() async throws {
         let (store, _) = try installRuntime()
         store.refresh(now: now)
         store.addTask(title: "parada", now: now)
 
-        await #expect(throws: FocusStore.ActionError.notFocusing) {
-            _ = try await CompleteTaskIntent().perform()
-        }
+        _ = try await CompleteTaskIntent().perform()
+        #expect(store.tasks.first?.isCompleted == false)
     }
 
     // MARK: O que o Atalho enxerga

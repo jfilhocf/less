@@ -57,12 +57,13 @@ struct PauseFocusIntent: AppIntent {
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
         let store = FocusRuntime.store
-        try store.pauseFocus()
+        let paused = try store.pauseFocus()
 
         // Pausado nao tem transicao prevista: manter notificacao agendada mentiria.
         await store.cancelNotifications()
 
-        return .result(dialog: IntentDialog("intent.pause.done"))
+        // "Nada para pausar" e resposta, nao falha: erro abortaria o Atalho inteiro.
+        return .result(dialog: IntentDialog(paused ? "intent.pause.done" : "intent.pause.nothing"))
     }
 }
 
@@ -78,7 +79,10 @@ struct CompleteTaskIntent: AppIntent {
         let store = FocusRuntime.store
         let title = try store.completeActiveTask()
         await store.cancelNotifications()
-        return .result(dialog: IntentDialog("intent.complete.done \(title)"))
+        if let title {
+            return .result(dialog: IntentDialog("intent.complete.done \(title)"))
+        }
+        return .result(dialog: IntentDialog("intent.complete.nothing"))
     }
 }
 

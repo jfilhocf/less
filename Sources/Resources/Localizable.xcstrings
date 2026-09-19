@@ -188,6 +188,23 @@
         }
       }
     },
+    "grayscale.openSettings": {
+      "comment": "Botao que leva aos ajustes do app",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Settings"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir Ajustes"
+          }
+        }
+      }
+    },
     "grayscale.section.body": {
       "comment": "Honestidade sobre o passo irredutivel",
       "localizations": {
@@ -223,69 +240,120 @@
       }
     },
     "grayscale.step.1": {
-      "comment": "Passo 1 do grayscale",
+      "comment": "Passo 1",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Open Control Center and tap Add a Control"
+            "value": "Open Settings and tap Accessibility"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Abra a Central de Controle e toque em Adicionar um Controle"
+            "value": "Abra os Ajustes e toque em Acessibilidade"
           }
         }
       }
     },
     "grayscale.step.2": {
-      "comment": "Passo 2 do grayscale",
+      "comment": "Passo 2",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Search for Color Filters and add it"
+            "value": "Under VISION, tap Display & Text Size"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Procure por Filtros de Cor e adicione"
+            "value": "Em VISÃO, toque em Tela e Tamanho do Texto"
           }
         }
       }
     },
     "grayscale.step.3": {
-      "comment": "Passo 3 do grayscale",
+      "comment": "Passo 3",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Press and hold the control, then choose Grayscale"
+            "value": "Scroll to Color Filters and tap it"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pressione e segure o controle, depois escolha Escala de Cinza"
+            "value": "Role até Filtros de Cor e toque"
           }
         }
       }
     },
     "grayscale.step.4": {
-      "comment": "Passo 4 do grayscale",
+      "comment": "Passo 4",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Turn it off. Done — now the shortcut knows which filter to use."
+            "value": "Turn on Color Filters — the filter list appears below"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Desligue. Pronto — agora o atalho sabe qual filtro usar."
+            "value": "Ligue a chave Filtros de Cor — a lista de filtros aparece abaixo"
+          }
+        }
+      }
+    },
+    "grayscale.step.5": {
+      "comment": "Passo 5",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap Grayscale and drag Intensity all the way right"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toque em Tons de Cinza e arraste a Intensidade toda para a direita"
+          }
+        }
+      }
+    },
+    "grayscale.step.6": {
+      "comment": "Passo 6",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn the switch off. Your choice is saved — now the shortcut goes straight to black and white."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desligue a chave. A escolha fica gravada — agora o atalho liga direto em preto e branco."
+          }
+        }
+      }
+    },
+    "grayscale.warning": {
+      "comment": "Aviso quando o filtro ativo nao e grayscale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The color filter is on, but not black and white. Choosing Grayscale is a one-time step in Settings."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O filtro de cor está ligado, mas não em preto e branco. Escolher Tons de Cinza é um passo único nos Ajustes."
           }
         }
       }
@@ -324,6 +392,23 @@
         }
       }
     },
+    "intent.complete.nothing": {
+      "comment": "Resposta: nao havia tarefa para concluir",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No task in focus."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nenhuma tarefa em foco."
+          }
+        }
+      }
+    },
     "intent.complete.title": {
       "comment": "Nome da acao no app Atalhos",
       "localizations": {
@@ -341,23 +426,6 @@
         }
       }
     },
-    "intent.error.alreadyFocusing": {
-      "comment": "Erro do intent: bloco ja rodando",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A block is already in progress."
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Já existe um bloco em andamento."
-          }
-        }
-      }
-    },
     "intent.error.couldNotSave": {
       "comment": "Erro do intent: falha de gravacao",
       "localizations": {
@@ -371,40 +439,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Não foi possível salvar."
-          }
-        }
-      }
-    },
-    "intent.error.noPendingTask": {
-      "comment": "Erro do intent: nada a iniciar",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No pending task today."
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Não há tarefa pendente hoje."
-          }
-        }
-      }
-    },
-    "intent.error.notFocusing": {
-      "comment": "Erro do intent: nada rodando",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No block in progress."
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nenhum bloco em andamento."
           }
         }
       }
@@ -439,6 +473,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Foco pausado."
+          }
+        }
+      }
+    },
+    "intent.pause.nothing": {
+      "comment": "Resposta: nao havia bloco para pausar",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing in progress."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nada em andamento."
           }
         }
       }
