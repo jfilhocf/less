@@ -151,12 +151,20 @@ final class FocusStore {
     func stop(now: Date = .now) {
         guard let task = activeTask else { return }
         let anchor = task.startedAt ?? now
+        timer.reconcile(now: now)
+
+        // `effectiveSeconds` e tempo de FOCO, nao tempo de relogio: 25 de foco + 5 de pausa
+        // + 25 de foco sao 55 minutos corridos e **50 de foco**. Usar `now - anchor` aqui
+        // contava pausa como foco e inflava a estatistica do usuario em silencio.
+        let focused = PomodoroEngine(preset: task.preset)
+            .focusedSeconds(elapsed: timer.elapsed)
+
         do {
             try persistence.recordSession(
                 taskID: task.id,
                 startedAt: anchor,
                 endedAt: now,
-                effectiveSeconds: Int(max(0, now.timeIntervalSince(anchor))),
+                effectiveSeconds: Int(focused),
                 completedCycles: timer.completedFocusBlocks,
                 wasInterrupted: timer.phase == .focus
             )

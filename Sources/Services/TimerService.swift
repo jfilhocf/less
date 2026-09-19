@@ -11,6 +11,9 @@ protocol TimerService: Sendable {
     var phase: PomodoroPhase { get }
     var remaining: TimeInterval { get }
     var isRunning: Bool { get }
+    /// Tempo de execucao acumulado, **ja descontado o que o usuario deixou pausado**.
+    /// Quem precisa de estatistica deve partir daqui e nao de `fim - inicio`.
+    var elapsed: TimeInterval { get }
 
     func start(preset: PomodoroPreset, at now: Date)
     func pause(at now: Date)
@@ -30,6 +33,7 @@ final class LiveTimerService: TimerService {
     private(set) var remaining: TimeInterval = 0
     private(set) var completedFocusBlocks: Int = 0
     private(set) var segmentIndex: Int = 0
+    private(set) var elapsed: TimeInterval = 0
 
     private var preset: PomodoroPreset = .short
     private var startDate: Date?
@@ -62,6 +66,7 @@ final class LiveTimerService: TimerService {
     func reset() {
         startDate = nil
         pausedElapsed = nil
+        elapsed = 0
         phase = .focus
         remaining = preset.focus
         completedFocusBlocks = 0
@@ -71,6 +76,7 @@ final class LiveTimerService: TimerService {
     func reconcile(now: Date = Date()) {
         guard let start = startDate else { return }
         let elapsed = pausedElapsed ?? max(0, now.timeIntervalSince(start))
+        self.elapsed = elapsed
         let status = PomodoroEngine(preset: preset).status(elapsed: elapsed)
         phase = status.phase
         remaining = status.remaining

@@ -93,6 +93,32 @@ struct PomodoroEngine: Sendable {
         (index + 1) / 2
     }
 
+    /// Quanto de `elapsed` foi passado DENTRO de blocos de foco.
+    ///
+    /// Existe porque tempo de execucao != tempo de foco: um bloco de 25 + pausa de 5 + bloco
+    /// de 25 sao 55 minutos de relogio e **50 de foco**. `FocusSession.effectiveSeconds`
+    /// promete "descontadas as pausas", entao a estatistica tem que sair daqui, nunca de
+    /// `fim - inicio` - senao os minutos do usuario aparecem inflados.
+    func focusedSeconds(elapsed: TimeInterval) -> TimeInterval {
+        let elapsed = max(0, elapsed)
+        var total: TimeInterval = 0
+        var accumulated: TimeInterval = 0
+        var index = 0
+        let safetyCap = 1_000_000
+
+        while index < safetyCap && accumulated < elapsed {
+            let segment = duration(at: index)
+            // quanto deste segmento ja foi percorrido
+            let consumed = min(elapsed, accumulated + segment) - accumulated
+            if phase(at: index) == .focus {
+                total += consumed
+            }
+            accumulated += segment
+            index += 1
+        }
+        return total
+    }
+
     /// Proximas transicoes de fase apos `now`, para agendar notificacoes (PRD 6.3).
     /// Retorna no maximo `limit` transicoes (o iOS limita notificacoes pendentes).
     func upcomingTransitions(start: Date, now: Date, limit: Int = 8) -> [PomodoroTransition] {

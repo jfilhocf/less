@@ -89,4 +89,53 @@ struct PomodoroEngineTests {
         #expect(t[2].entering == .shortBreak)
         #expect(t[2].at == start.addingTimeInterval(3300))
     }
+
+    // MARK: Tempo de foco x tempo de relogio
+
+    @Test("tempo de foco desconta as pausas - 25+5+25 sao 50 de foco, nao 55")
+    func focusedSecondsExcludesBreaks() {
+        let engine = PomodoroEngine(preset: .short)
+        // 55 min corridos = foco 25 + pausa 5 + foco 25
+        #expect(engine.focusedSeconds(elapsed: 55 * 60) == 50 * 60)
+    }
+
+    @Test("dentro do primeiro bloco, foco e o proprio tempo decorrido")
+    func focusedSecondsInsideFirstBlock() {
+        let engine = PomodoroEngine(preset: .short)
+        #expect(engine.focusedSeconds(elapsed: 10 * 60) == 10 * 60)
+        #expect(engine.focusedSeconds(elapsed: 0) == 0)
+    }
+
+    @Test("tempo parado na pausa nao acrescenta foco")
+    func breakTimeAddsNothing() {
+        let engine = PomodoroEngine(preset: .short)
+        // 25 de foco fechados, depois 1, 3 e 5 min de pausa: foco congela em 25
+        #expect(engine.focusedSeconds(elapsed: 25 * 60) == 25 * 60)
+        #expect(engine.focusedSeconds(elapsed: 26 * 60) == 25 * 60)
+        #expect(engine.focusedSeconds(elapsed: 28 * 60) == 25 * 60)
+        #expect(engine.focusedSeconds(elapsed: 30 * 60) == 25 * 60)
+    }
+
+    @Test("a pausa longa tambem nao conta como foco")
+    func longBreakAddsNothing() {
+        let engine = PomodoroEngine(preset: .short)
+        // 4 blocos de foco + 3 pausas curtas = 115 min corridos, 100 de foco
+        #expect(engine.focusedSeconds(elapsed: 115 * 60) == 100 * 60)
+        // +15 min de pausa longa: relogio anda 15, foco nao anda nada
+        #expect(engine.focusedSeconds(elapsed: 130 * 60) == 100 * 60)
+        // recomeca o foco no 5o bloco
+        #expect(engine.focusedSeconds(elapsed: 140 * 60) == 110 * 60)
+    }
+
+    @Test("preset longo tem sua propria conta de foco")
+    func focusedSecondsLongPreset() {
+        let engine = PomodoroEngine(preset: .long)
+        // 50 de foco + 10 de pausa + 50 de foco = 110 corridos, 100 de foco
+        #expect(engine.focusedSeconds(elapsed: 110 * 60) == 100 * 60)
+    }
+
+    @Test("elapsed negativo nao vira foco negativo")
+    func focusedSecondsNeverNegative() {
+        #expect(PomodoroEngine(preset: .short).focusedSeconds(elapsed: -100) == 0)
+    }
 }

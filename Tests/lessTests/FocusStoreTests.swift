@@ -237,4 +237,63 @@ struct FocusStoreTests {
         #expect(FocusSessionView.clock(0) == "00:00")
         #expect(FocusSessionView.clock(-5) == "00:00")
     }
+
+    // MARK: Estatistica - o bug que o audit da Fase 4b encontrou
+
+    @Test("sessao grava tempo de FOCO, nao tempo de relogio")
+    func sessionRecordsFocusTimeNotWallClock() throws {
+        let container = try ModelContainer.lessInMemory()
+        let (store, _) = makeStore(container: container)
+        store.refresh(now: now)
+        store.addTask(title: "medir direito", now: now)
+        store.start(store.tasks[0], now: now)
+
+        // 55 min corridos = 25 foco + 5 pausa + 25 foco
+        store.stop(now: now.addingTimeInterval(55 * 60))
+
+        let persistence = SwiftDataPersistenceService(container: container)
+        let sessions = try persistence.sessions(
+            from: now.addingTimeInterval(-60), to: now.addingTimeInterval(4 * 3600)
+        )
+        #expect(sessions.count == 1)
+        // 50 min de foco, nao os 55 do relogio
+        #expect(sessions.first?.effectiveSeconds == 50 * 60)
+    }
+
+    @Test("encerrar no meio de uma pausa nao credita a pausa como foco")
+    func stoppingDuringBreakDoesNotCreditIt() throws {
+        let container = try ModelContainer.lessInMemory()
+        let (store, _) = makeStore(container: container)
+        store.refresh(now: now)
+        store.addTask(title: "parou na pausa", now: now)
+        store.start(store.tasks[0], now: now)
+
+        // 28 min: o bloco de 25 fechou e ja se passaram 3 da pausa
+        store.stop(now: now.addingTimeInterval(28 * 60))
+
+        let persistence = SwiftDataPersistenceService(container: container)
+        let sessions = try persistence.sessions(
+            from: now.addingTimeInterval(-60), to: now.addingTimeInterval(4 * 3600)
+        )
+        #expect(sessions.first?.effectiveSeconds == 25 * 60)
+    }
+
+    @Test("tempo pausado pelo usuario tambem nao conta como foco")
+    func userPauseDoesNotCountAsFocus() throws {
+        let container = try ModelContainer.lessInMemory()
+        let (store, _) = makeStore(container: container)
+        store.refresh(now: now)
+        store.addTask(title: "pausou", now: now)
+        store.start(store.tasks[0], now: now)
+
+        store.pause(now: now.addingTimeInterval(10 * 60))   // 10 min de foco
+        store.stop(now: now.addingTimeInterval(40 * 60))    // 30 min parado
+
+        let persistence = SwiftDataPersistenceService(container: container)
+        let sessions = try persistence.sessions(
+            from: now.addingTimeInterval(-60), to: now.addingTimeInterval(4 * 3600)
+        )
+        // so os 10 min que rodaram de fato
+        #expect(sessions.first?.effectiveSeconds == 10 * 60)
+    }
 }
