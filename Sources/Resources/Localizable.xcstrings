@@ -885,6 +885,23 @@
         }
       }
     },
+    "today.done": {
+      "comment": "Dia cumprido: diz o que fazer em vez de so bloquear",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All three are done. Tomorrow brings more — or swipe one away to make room."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "As três do dia estão feitas. Amanhã tem mais — ou arraste uma para apagar e abrir espaço."
+          }
+        }
+      }
+    },
     "today.empty": {
       "comment": "Lista do dia vazia",
       "localizations": {
@@ -956,6 +973,23 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "today.swipe.hint": {
+      "comment": "Dica do gesto, mostrada quando o dia esta cheio",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Swipe a task sideways to delete"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arraste uma tarefa para o lado para apagar"
           }
         }
       }
