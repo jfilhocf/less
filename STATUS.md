@@ -138,12 +138,34 @@
   notificacao dispara na hora certa) **depende da Fase 4a** - sem tela nao ha como iniciar um
   Pomodoro. Entra no checklist da 4a.
 
+## Feito nesta sessao (2026-09-18, parte 3) - FASE 4a: O APP TEM TELA
+
+- **`FocusStore`** (`@MainActor @Observable`) orquestra tarefas + Pomodoro + notificacoes.
+  Continua **sem regra propria**: teto e rolagem em `DailyTaskRules`, tempo no `PomodoroEngine`.
+- **`TodayTasksView`**: lista das 3 tarefas do dia, criar, concluir, aviso de quantas rolaram.
+  Ao bater o teto o campo de entrada **some**, em vez de aceitar e recusar depois - a restricao
+  e do produto, nao erro do usuario.
+- **`FocusSessionView`**: tempo em tipografia grande, fase, pontos de ciclo, um botao principal.
+- **Permissao de notificacao pedida ao iniciar o primeiro bloco**, nunca no launch.
+- **13 testes novos** (total: **51 em 6 suites**, verdes, zero warning).
+- **RECONCILIACAO VERIFICADA DE VERDADE:** app morto no simulador com Pomodoro rodando,
+  reaberto 45 s depois -> voltou na tela de foco com o tempo ja descontado. Fecha o aceite que
+  estava pendente da Fase 3. Teste deterministico cobre ate varias transicoes perdidas de uma vez.
+- **Bug corrigido:** `canCreate` lia `Date()` solto enquanto o resto do store usava a data
+  injetada - no app funcionava por coincidencia, mas o estado exibido e o consultado podiam ser
+  de dias diferentes. Agora o store fixa um `dayKey` por recarga e tudo deriva dele.
+- **`seedDemo`** em `#if DEBUG` popula o dia via argumento de launch (`-seedDemo`,
+  `-seedRunning`) para inspecionar a interface no simulador. **Nao existe no build de release.**
+
 ## Proximo passo
-- ~~**Fase 2** - `PersistenceService`~~ **FEITA 2026-09-18** (26 testes verdes).
-- ~~**Fase 3** - `NotificationService`~~ **FEITA 2026-09-18** (38 testes verdes).
-- **Agora: Fase 4a - minimo usavel** -> **primeiro teste no iPhone do Joao**. Lista das 3
-  tarefas do dia + tela de foco + Pomodoro nos dois presets + a notificacao de transicao.
-  Instala com Apple ID gratuita (7 dias), sem precisar dos US$ 99.
+- ~~**Fase 2** - `PersistenceService`~~ **FEITA 2026-09-18** (26 testes).
+- ~~**Fase 3** - `NotificationService`~~ **FEITA 2026-09-18** (38 testes).
+- ~~**Fase 4a** - minimo usavel~~ **CONSTRUIDA 2026-09-18** (51 testes).
+- **AGORA E COM O JOAO: usar o app no proprio iPhone, no proprio dia.** Instala com Apple ID
+  gratuita (7 dias), sem os US$ 99. E o unico jeito de saber se as regras que ele inventou
+  (teto de 3, rolagem que ocupa vaga) funcionam na pratica - e se a notificacao dispara certo
+  com o aparelho bloqueado. **Nao construir a 4b antes desse retorno**: seria construir Ajustes
+  em volta de uma regra ainda nao validada.
 - Depois: 4b (+ App Intents) -> Audio -> Fase 7 (bloqueio) -> Compliance -> Submissao.
 
 ## Historico

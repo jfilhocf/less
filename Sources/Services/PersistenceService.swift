@@ -45,6 +45,18 @@ protocol PersistenceService: Sendable {
 
     func delete(_ task: FocusTask) throws
 
+    // MARK: Pomodoro em execucao
+
+    /// Ancora o Pomodoro da tarefa em `now` e persiste. **A ancora precisa estar em disco**:
+    /// e ela que permite reconstruir o estado certo se o app for morto no meio (PRD 6.3).
+    func startPomodoro(on task: FocusTask, at now: Date) throws
+
+    /// Desancora (fim ou desistencia).
+    func stopPomodoro(on task: FocusTask) throws
+
+    /// A tarefa com Pomodoro ancorado, se houver. So pode haver uma.
+    func activeTask() throws -> FocusTask?
+
     // MARK: Ajustes (singleton)
 
     /// Ajustes globais, criados com os defaults no primeiro acesso.
@@ -152,6 +164,30 @@ final class SwiftDataPersistenceService: PersistenceService {
     func delete(_ task: FocusTask) throws {
         context.delete(task)
         try context.save()
+    }
+
+    // MARK: Pomodoro em execucao
+
+    func startPomodoro(on task: FocusTask, at now: Date) throws {
+        // So uma tarefa ancorada por vez: iniciar outra encerra a anterior.
+        for other in try context.fetch(
+            FetchDescriptor<FocusTask>(predicate: #Predicate { $0.startedAt != nil })
+        ) where other.id != task.id {
+            other.startedAt = nil
+        }
+        task.startedAt = now
+        try context.save()
+    }
+
+    func stopPomodoro(on task: FocusTask) throws {
+        task.startedAt = nil
+        try context.save()
+    }
+
+    func activeTask() throws -> FocusTask? {
+        try context.fetch(
+            FetchDescriptor<FocusTask>(predicate: #Predicate { $0.startedAt != nil })
+        ).first
     }
 
     // MARK: Ajustes

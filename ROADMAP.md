@@ -82,8 +82,8 @@ todas). A ordem real, apos a repriorizacao do PRD 16 e o novo escopo do PRD 17:
 |---|---|---|
 | 1o | **0** - Fundacao | **COMPLETA** - CI verde |
 | 2o | **2** - Persistencia | **COMPLETA** (2026-09-18) - `PersistenceService` sobre SwiftData |
-| 3o | **3** - Pomodoro | **COMPLETA no CI** (2026-09-18) - falta so o aceite em device, que depende da 4a |
-| 4o | **4a** - Minimo usavel | A FAZER - **proximo passo**; primeiro teste em iPhone |
+| 3o | **3** - Pomodoro | **COMPLETA** (2026-09-18) - reconciliacao verificada no simulador |
+| 4o | **4a** - Minimo usavel | **COMPLETA** (2026-09-18) - falta so o **uso real pelo Joao** |
 | 5o | **4b** - Interface completa + App Intents | A FAZER |
 | 6o | **1** - Audio | ADIADA para ca - `DSP.swift` escrito, falta o servico em volta |
 | 7o | **7** - Bloqueio de apps | NOVA - destravada pela **entitlement da Apple** |
@@ -103,16 +103,18 @@ Fica posicionada depois do audio de proposito: o tempo de fila e preenchido com 
 - **Aceite:** ATENDIDO - CI verde desde o run 34297221631; revalidado localmente no Mac em
   2026-09-16 (compilacao limpa sob strict concurrency + 15 testes em 3 suites).
 
-### Fase 2 - Persistencia do nucleo de produtividade   **[PARCIAL]**
+### Fase 2 - Persistencia do nucleo de produtividade   **[COMPLETA]**
 - **DoR:** nenhum.
-- **Entrega:** `PersistenceService` sobre SwiftData para `FocusTask`, `FocusSession` e
-  `AppSettings` - criar / rolar / concluir tarefa, **reusando as regras puras ja prontas em
-  `Sources/Services/Pomodoro/DailyTaskRules.swift`** (teto de 3/dia, rolagem que ocupa vaga).
-  Nao reimplementar regra: o servico so persiste o que `DailyTaskRules` decide.
-- **Ja existe:** os 4 `@Model` (`FocusTask`, `FocusSession`, `AppSettings`, `PomodoroPreset`).
-- **Falta:** `Sources/Services/PersistenceService.swift` e hoje **so um protocolo** (11 linhas).
-- **Aceite (CI):** container SwiftData in-memory; criar tarefa, "reabrir", persiste; teto e
-  rolagem batem com `DailyTaskRulesTests`.
+- **Entregue (2026-09-18):** `SwiftDataPersistenceService` para `FocusTask`, `FocusSession` e
+  `AppSettings` - criar / rolar / concluir / apagar tarefa, ancora do Pomodoro em disco e
+  sessoes consultaveis por intervalo. **Reusa as regras puras de
+  `Sources/Services/Pomodoro/DailyTaskRules.swift`** (teto de 3/dia, rolagem que ocupa vaga):
+  o servico nao decide regra, so aplica o que `DailyTaskRules` manda e grava.
+  `ModelContainer.less()` / `.lessInMemory()` centralizam o schema.
+- **Aceite (CI): ATENDIDO** - 11 testes com container in-memory.
+- > **Duas armadilhas achadas aqui** (detalhe no `STATUS.md`): `ModelContainer(for:)` sem URL
+  > explicita assume que `Application Support` existe; e o `ModelContext` **nao retem** o
+  > container - guardar so o contexto derruba o processo com SIGTRAP, sem erro Swift.
 - > **Reescopada em 2026-09-18:** "seed do catalogo via JSON" e "CRUD de `Mix`" sairam daqui -
   > sao da trilha de audio e migraram para a Fase 1.
 
@@ -124,23 +126,34 @@ Fica posicionada depois do audio de proposito: o tempo de fila e preenchido com 
   local por transicao, agendada a partir do `upcomingTransitions` que o engine ja expoe (o
   servico nao recalcula quando cada fase termina), por **data absoluta**, cancelando antes de
   reagendar e sem tocar notificacao de outra origem.
-- **Aceite (CI):** ATENDIDO - reconciliacao com relogio injetado + 12 testes do agendamento.
-- **Aceite (device): PENDENTE, depende da Fase 4a** (nao ha como iniciar um Pomodoro sem tela):
-  iniciar 25 min, matar o app, esperar 30 min, reabrir -> o app sabe que o bloco acabou e a
-  notificacao disparou no instante certo. **Entra no checklist da 4a.**
+- **Aceite (CI): ATENDIDO** - reconciliacao com relogio injetado + 12 testes do agendamento.
+- **Aceite (simulador): ATENDIDO em 2026-09-18**, assim que a Fase 4a deu uma tela para iniciar
+  o Pomodoro: app morto com bloco rodando, reaberto 45 s depois, voltou no estado certo com o
+  tempo descontado. Reforcado por teste deterministico (`FocusStoreTests`), que cobre ate
+  varias transicoes perdidas de uma vez.
+- **Aceite (iPhone fisico): PENDENTE** - o disparo real da notificacao com o aparelho bloqueado
+  so o Joao confirma, usando o app no proprio dia.
 - > **Nota de concorrencia:** `UNNotificationRequest` nao e `Sendable` e nao pode cruzar
   > fronteira de ator sob strict concurrency. Por isso existe `PendingNotification` (tipo
   > proprio, `Sendable`): a traducao para o tipo do sistema acontece so na borda, em
   > `SystemNotificationCenter`. Nao "simplificar" voltando a passar o tipo do framework.
 
-### Fase 4a - Minimo usavel   **[A FAZER - primeiro teste em iPhone]**
+### Fase 4a - Minimo usavel   **[CONSTRUIDA - aguardando uso real]**
 - **DoR:** Fases 2 e 3 fechadas. Para instalar no iPhone basta **Apple ID gratuito**
   (free provisioning, o app expira em 7 dias) - **nao** precisa dos US$ 99.
-- **Entrega:** o caminho feliz, nada alem dele:
-  - lista das **3 tarefas do dia** (PRD 16.1) - criar, concluir, ver a rolagem funcionando;
-  - **tela de foco** com o tempo restante em tipografia grande e botao unico iniciar/pausar;
-  - Pomodoro rodando nos dois presets (`25/5`, `50/10`) com a notificacao de transicao.
-- **Aceite:** o Joao usa no proprio dia, no proprio iPhone, e diz o que incomoda.
+- **Entregue (2026-09-18):**
+  - `FocusStore` (`@MainActor @Observable`) orquestrando tarefas + Pomodoro + notificacoes,
+    **sem regra propria**: teto e rolagem seguem em `DailyTaskRules`, tempo no `PomodoroEngine`;
+  - `TodayTasksView` - lista das 3 tarefas (PRD 16.1), criar, concluir, aviso de rolagem. Ao
+    bater o teto o campo de entrada **some**, em vez de aceitar e recusar depois;
+  - `FocusSessionView` - tempo em tipografia grande, fase, pontos de ciclo e um botao principal;
+  - permissao de notificacao pedida **ao iniciar o primeiro bloco**, nunca no launch.
+- **Aceite (CI):** 13 testes do `FocusStore`, incluindo reconciliacao com relogio injetado.
+- **Aceite (simulador): ATENDIDO** - app morto com Pomodoro rodando, reaberto 45 s depois,
+  voltou na tela de foco com o tempo ja descontado. **Isto fecha o aceite pendente da Fase 3.**
+- **Aceite (uso real): PENDENTE, e do Joao** - usar no proprio dia, no proprio iPhone, e dizer
+  o que incomoda. E o unico jeito de saber se as regras que ele inventou (teto de 3, rolagem
+  que ocupa vaga) funcionam na pratica.
 - > **Por que existe:** valida cedo as regras que o Joao inventou (teto de 3, rolagem que ocupa
   > vaga). Se a regra incomodar na pratica, melhor descobrir antes de construir Ajustes em volta.
 

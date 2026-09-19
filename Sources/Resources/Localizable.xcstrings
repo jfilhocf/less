@@ -35,6 +35,125 @@
         }
       }
     },
+    "error.load": {
+      "comment": "Falha ao ler do armazenamento",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not load today."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não foi possível carregar o dia."
+          }
+        }
+      }
+    },
+    "error.save": {
+      "comment": "Falha ao gravar no armazenamento",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not save."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não foi possível salvar."
+          }
+        }
+      }
+    },
+    "focus.cycles": {
+      "comment": "Rotulo acessivel dos pontos de ciclo",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Completed blocks"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blocos concluídos"
+          }
+        }
+      }
+    },
+    "focus.pause": {
+      "comment": "Botao: pausar o Pomodoro",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pause"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pausar"
+          }
+        }
+      }
+    },
+    "focus.remaining": {
+      "comment": "Rotulo acessivel do relogio",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time remaining"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tempo restante"
+          }
+        }
+      }
+    },
+    "focus.resume": {
+      "comment": "Botao: retomar o Pomodoro",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resume"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retomar"
+          }
+        }
+      }
+    },
+    "focus.stop": {
+      "comment": "Botao: encerrar o bloco",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Encerrar"
+          }
+        }
+      }
+    },
     "notification.focus.title": {
       "comment": "Notificacao: comeca um bloco de foco",
       "localizations": {
@@ -86,6 +205,57 @@
         }
       }
     },
+    "phase.focus": {
+      "comment": "Fase atual: bloco de foco",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "focus"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "foco"
+          }
+        }
+      }
+    },
+    "phase.longBreak": {
+      "comment": "Fase atual: pausa longa",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "long break"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "pausa longa"
+          }
+        }
+      }
+    },
+    "phase.shortBreak": {
+      "comment": "Fase atual: pausa curta",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "break"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "pausa"
+          }
+        }
+      }
+    },
     "player": {
       "comment": "Titulo da aba do player",
       "localizations": {
@@ -99,6 +269,149 @@
           "stringUnit": {
             "state": "translated",
             "value": "player"
+          }
+        }
+      }
+    },
+    "task.complete": {
+      "comment": "Rotulo acessivel do botao de concluir",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Complete"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Concluir"
+          }
+        }
+      }
+    },
+    "today.add": {
+      "comment": "Rotulo acessivel do botao de adicionar",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add task"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adicionar tarefa"
+          }
+        }
+      }
+    },
+    "today.add.placeholder": {
+      "comment": "Placeholder do campo de nova tarefa",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What will you do?"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O que você vai fazer?"
+          }
+        }
+      }
+    },
+    "today.empty": {
+      "comment": "Lista do dia vazia",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No tasks yet."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nenhuma tarefa ainda."
+          }
+        }
+      }
+    },
+    "today.full": {
+      "comment": "Teto do dia atingido - restricao do produto, nao erro",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Three a day is the limit."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Três por dia é o limite."
+          }
+        }
+      }
+    },
+    "today.rolled %lld": {
+      "comment": "Aviso de quantas tarefas rolaram de dias anteriores",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld task rolled over"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld tasks rolled over"
+                }
+              }
+            }
+          }
+        },
+        "pt-BR": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld tarefa veio de antes"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld tarefas vieram de antes"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "today.title": {
+      "comment": "Titulo da lista de tarefas do dia",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "today"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "hoje"
           }
         }
       }
