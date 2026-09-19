@@ -37,12 +37,21 @@ final class FocusStore {
 
     private let persistence: any PersistenceService
     private let notifications: any NotificationService
+    private let alarms: any AlarmScheduling
     private let timer = LiveTimerService()
     private var ticker: Task<Void, Never>?
+    /// `true` depois que o usuario autorizou o alarme. Enquanto for falso, o aviso de
+    /// transicao sai por notificacao comum.
+    private var alarmsAuthorized = false
 
-    init(persistence: any PersistenceService, notifications: any NotificationService) {
+    init(
+        persistence: any PersistenceService,
+        notifications: any NotificationService,
+        alarms: any AlarmScheduling = AlarmServiceFactory.make()
+    ) {
         self.persistence = persistence
         self.notifications = notifications
+        self.alarms = alarms
     }
 
     // Sem `deinit` para cancelar o ticker: `deinit` nao roda isolado na main actor e nao pode
@@ -202,6 +211,7 @@ final class FocusStore {
     /// Pausado nao tem transicao prevista: deixar notificacao agendada mentiria.
     func cancelNotifications() async {
         await notifications.cancelAll()
+        await alarms.cancelAll()
     }
 
     func resume(now: Date = .now) {
@@ -271,7 +281,7 @@ final class FocusStore {
     @discardableResult
     func startNextPendingTask(now: Date = .now) throws -> String {
         // versao sincrona: reagendar aqui correria contra o cancelamento do proprio intent
-        try? reloadState(now: now)
+        _ = try? reloadState(now: now)
         guard activeTask == nil else { throw ActionError.alreadyFocusing }
         guard let next = tasks.first(where: { !$0.isCompleted }) else {
             throw ActionError.noPendingTask
@@ -287,7 +297,7 @@ final class FocusStore {
     /// Pausa o bloco em andamento.
     func pauseFocus(now: Date = .now) throws {
         // versao sincrona: reagendar aqui correria contra o cancelamento do proprio intent
-        try? reloadState(now: now)
+        _ = try? reloadState(now: now)
         guard activeTask != nil, isRunning else { throw ActionError.notFocusing }
         pauseBlock(now: now)
     }
@@ -296,7 +306,7 @@ final class FocusStore {
     @discardableResult
     func completeActiveTask(now: Date = .now) throws -> String {
         // versao sincrona: reagendar aqui correria contra o cancelamento do proprio intent
-        try? reloadState(now: now)
+        _ = try? reloadState(now: now)
         guard let task = activeTask else { throw ActionError.notFocusing }
         let title = task.title
         complete(task, now: now)
@@ -304,7 +314,16 @@ final class FocusStore {
         return title
     }
 
+    /// Pede autorizacao do aviso de transicao, preferindo o alarme.
+    ///
+    /// Pede **um** dos dois, nunca os dois seguidos: dois dialogos de permissao no primeiro
+    /// bloco e o caminho mais curto para o usuario negar os dois.
     func requestNotificationPermission() async {
+        if alarms.isAvailable, await alarms.requestAuthorization() {
+            alarmsAuthorized = true
+            return
+        }
+        alarmsAuthorized = false
         _ = await notifications.requestAuthorization()
     }
 
@@ -316,13 +335,24 @@ final class FocusStore {
         tasks = try persistence.tasks(on: dayKey)
     }
 
+    /// Reagenda o aviso de transicao pelo melhor meio disponivel.
+    ///
+    /// **Um meio de cada vez, nunca os dois** - avisar em dobro seria pior que nao avisar.
+    /// O alarme ganha quando autorizado porque e o unico que **fura o Modo Foco e o
+    /// silencioso**; a notificacao comum e silenciada justamente pelo Foco que o usuario
+    /// ligou para trabalhar. Sem autorizacao (ou em iOS < 26), cai na notificacao.
     private func rescheduleNotifications(from anchor: Date, now: Date) async {
         guard let task = activeTask else { return }
         let upcoming = PomodoroEngine(preset: task.preset)
             .upcomingTransitions(start: anchor, now: now)
-        await notifications.rescheduleTransitions(
-            upcoming, taskTitle: task.title, now: now
-        )
+
+        if alarmsAuthorized {
+            await notifications.cancelAll()
+            await alarms.schedule(upcoming, taskTitle: task.title, now: now)
+        } else {
+            await alarms.cancelAll()
+            await notifications.rescheduleTransitions(upcoming, taskTitle: task.title, now: now)
+        }
     }
 
     /// Um tick por segundo so para a interface: o valor mostrado vem sempre de

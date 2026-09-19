@@ -18,6 +18,23 @@
         }
       }
     },
+    "alarm.stop": {
+      "comment": "Botao do alarme de virada de ciclo",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        }
+      }
+    },
     "biblioteca": {
       "comment": "Titulo da aba de biblioteca",
       "localizations": {

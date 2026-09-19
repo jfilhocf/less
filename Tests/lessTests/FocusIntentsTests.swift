@@ -23,7 +23,8 @@ struct FocusIntentsTests {
         let center = FakeNotificationCenter()
         let store = FocusStore(
             persistence: SwiftDataPersistenceService(container: container),
-            notifications: LiveNotificationService(center: center)
+            notifications: LiveNotificationService(center: center),
+            alarms: UnavailableAlarmService()
         )
         FocusRuntime.install(container: container, store: store)
         return (store, center)

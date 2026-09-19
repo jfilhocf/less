@@ -21,7 +21,10 @@ struct FocusStoreTests {
         let center = FakeNotificationCenter()
         let store = FocusStore(
             persistence: SwiftDataPersistenceService(container: container),
-            notifications: LiveNotificationService(center: center)
+            notifications: LiveNotificationService(center: center),
+            // Alarme indisponivel de proposito: assim o aviso sai pela notificacao e o
+            // teste e deterministico. O AlarmKit real pediria autorizacao do sistema.
+            alarms: UnavailableAlarmService()
         )
         return (store, center)
     }

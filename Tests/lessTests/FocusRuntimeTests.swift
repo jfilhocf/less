@@ -22,7 +22,8 @@ struct FocusRuntimeTests {
         let container = try ModelContainer.lessInMemory()
         let store = FocusStore(
             persistence: SwiftDataPersistenceService(container: container),
-            notifications: LiveNotificationService(center: FakeNotificationCenter())
+            notifications: LiveNotificationService(center: FakeNotificationCenter()),
+            alarms: UnavailableAlarmService()
         )
         FocusRuntime.install(container: container, store: store)
         return (container, store)
@@ -79,6 +80,12 @@ struct FocusRuntimeTests {
         #expect(FocusRuntime.isInstalled)
         FocusRuntime.reset()
         #expect(FocusRuntime.isInstalled == false)
+
+        // Reinstala antes de sair: o app host compartilha o processo e sua PlayerView le
+        // FocusRuntime.store. Deixar desinstalado derruba o processo inteiro num
+        // preconditionFailure - que foi exatamente o que aconteceu.
+        _ = try installFresh()
+        #expect(FocusRuntime.isInstalled)
     }
 }
 
@@ -94,7 +101,8 @@ struct AwaitableSideEffectsTests {
         let center = FakeNotificationCenter()
         let store = FocusStore(
             persistence: SwiftDataPersistenceService(container: container),
-            notifications: LiveNotificationService(center: center)
+            notifications: LiveNotificationService(center: center),
+            alarms: UnavailableAlarmService()
         )
         return (store, center)
     }

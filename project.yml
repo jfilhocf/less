@@ -40,6 +40,10 @@ targets:
           - UIInterfaceOrientationPortrait
         UIApplicationSupportsIndirectInputEvents: true
         ITSAppUsesNonExemptEncryption: false
+        # AlarmKit (iOS 26+): o aviso de virada de ciclo precisa furar o Modo Foco e o
+        # silencioso - uma notificacao comum e silenciada pelo proprio Foco que o usuario
+        # ligou para trabalhar. Nao exige entitlement, so esta chave e a autorizacao.
+        NSAlarmKitUsageDescription: "O less usa um alarme para avisar a virada do ciclo de foco, mesmo com o telefone no silencioso ou em Modo Foco." 
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: cloud.convextech.less
