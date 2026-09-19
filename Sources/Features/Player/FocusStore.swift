@@ -207,6 +207,64 @@ final class FocusStore {
         Task { await self.cancelNotifications() }
     }
 
+    // MARK: Acoes por identidade (usadas pelos App Intents)
+
+    /// Falhas que um App Intent precisa comunicar ao usuario pela Siri/Atalhos.
+    /// `CustomLocalizedStringResourceConvertible` faz o sistema falar a frase certa em vez
+    /// de "a operacao nao pode ser concluida".
+    enum ActionError: Error, CustomLocalizedStringResourceConvertible, Equatable {
+        case noPendingTask
+        case alreadyFocusing
+        case notFocusing
+        case couldNotSave
+
+        var localizedStringResource: LocalizedStringResource {
+            switch self {
+            case .noPendingTask:   return "intent.error.noPendingTask"
+            case .alreadyFocusing: return "intent.error.alreadyFocusing"
+            case .notFocusing:     return "intent.error.notFocusing"
+            case .couldNotSave:    return "intent.error.couldNotSave"
+            }
+        }
+    }
+
+    /// Inicia a proxima tarefa pendente do dia. Devolve o titulo, para o intent responder.
+    ///
+    /// Sincrona de proposito: o efeito assincrono (notificacoes) fica em `finishStart`, que
+    /// o intent AGUARDA antes de retornar - senao o processo pode ser suspenso no meio.
+    @discardableResult
+    func startNextPendingTask(now: Date = .now) throws -> String {
+        refresh(now: now)
+        guard activeTask == nil else { throw ActionError.alreadyFocusing }
+        guard let next = tasks.first(where: { !$0.isCompleted }) else {
+            throw ActionError.noPendingTask
+        }
+        do {
+            try startBlock(next, now: now)
+        } catch {
+            throw ActionError.couldNotSave
+        }
+        return next.title
+    }
+
+    /// Pausa o bloco em andamento.
+    func pauseFocus(now: Date = .now) throws {
+        refresh(now: now)
+        guard activeTask != nil, isRunning else { throw ActionError.notFocusing }
+        pauseBlock(now: now)
+    }
+
+    /// Conclui a tarefa em foco. Devolve o titulo concluido.
+    @discardableResult
+    func completeActiveTask(now: Date = .now) throws -> String {
+        refresh(now: now)
+        guard let task = activeTask else { throw ActionError.notFocusing }
+        let title = task.title
+        complete(task, now: now)
+        if errorMessage != nil { throw ActionError.couldNotSave }
+        return title
+    }
+
     func requestNotificationPermission() async {
         _ = await notifications.requestAuthorization()
     }

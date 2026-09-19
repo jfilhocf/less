@@ -1,0 +1,102 @@
+{
+  "sourceLanguage": "pt-BR",
+  "strings": {
+    "Iniciar foco no ${applicationName}": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start focus in ${applicationName}"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Iniciar foco no ${applicationName}"
+          }
+        }
+      }
+    },
+    "Começar a focar no ${applicationName}": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start focusing in ${applicationName}"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Começar a focar no ${applicationName}"
+          }
+        }
+      }
+    },
+    "Pausar o foco no ${applicationName}": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pause focus in ${applicationName}"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pausar o foco no ${applicationName}"
+          }
+        }
+      }
+    },
+    "Pausar o ${applicationName}": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pause ${applicationName}"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pausar o ${applicationName}"
+          }
+        }
+      }
+    },
+    "Concluir a tarefa no ${applicationName}": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Complete the task in ${applicationName}"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Concluir a tarefa no ${applicationName}"
+          }
+        }
+      }
+    },
+    "Terminar a tarefa no ${applicationName}": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finish the task in ${applicationName}"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terminar a tarefa no ${applicationName}"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

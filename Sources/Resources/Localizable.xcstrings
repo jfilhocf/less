@@ -154,6 +154,227 @@
         }
       }
     },
+    "intent.complete.description": {
+      "comment": "Descricao da acao no Atalhos",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Completes the task currently in focus."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conclui a tarefa que está em foco."
+          }
+        }
+      }
+    },
+    "intent.complete.done %@": {
+      "comment": "Resposta da Siri ao concluir, com o titulo da tarefa",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ completed."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ concluída."
+          }
+        }
+      }
+    },
+    "intent.complete.title": {
+      "comment": "Nome da acao no app Atalhos",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Complete task"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Concluir tarefa"
+          }
+        }
+      }
+    },
+    "intent.error.alreadyFocusing": {
+      "comment": "Erro do intent: bloco ja rodando",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A block is already in progress."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Já existe um bloco em andamento."
+          }
+        }
+      }
+    },
+    "intent.error.couldNotSave": {
+      "comment": "Erro do intent: falha de gravacao",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not save."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não foi possível salvar."
+          }
+        }
+      }
+    },
+    "intent.error.noPendingTask": {
+      "comment": "Erro do intent: nada a iniciar",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No pending task today."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não há tarefa pendente hoje."
+          }
+        }
+      }
+    },
+    "intent.error.notFocusing": {
+      "comment": "Erro do intent: nada rodando",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No block in progress."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nenhum bloco em andamento."
+          }
+        }
+      }
+    },
+    "intent.pause.description": {
+      "comment": "Descricao da acao no Atalhos",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pauses the focus block in progress."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pausa o bloco de foco em andamento."
+          }
+        }
+      }
+    },
+    "intent.pause.done": {
+      "comment": "Resposta da Siri ao pausar",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Focus paused."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Foco pausado."
+          }
+        }
+      }
+    },
+    "intent.pause.title": {
+      "comment": "Nome da acao no app Atalhos",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pause focus"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pausar foco"
+          }
+        }
+      }
+    },
+    "intent.start.description": {
+      "comment": "Descricao da acao no Atalhos",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starts a focus block on the next task of the day."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inicia um bloco de foco na próxima tarefa do dia."
+          }
+        }
+      }
+    },
+    "intent.start.done %@": {
+      "comment": "Resposta da Siri ao iniciar, com o titulo da tarefa",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Focusing on %@."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Focando em %@."
+          }
+        }
+      }
+    },
+    "intent.start.title": {
+      "comment": "Nome da acao no app Atalhos",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start focus"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Iniciar foco"
+          }
+        }
+      }
+    },
     "notification.focus.title": {
       "comment": "Notificacao: comeca um bloco de foco",
       "localizations": {
